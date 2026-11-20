@@ -1,0 +1,22 @@
+.detail {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 2rem;
+}
+
+.price {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.form {
+  display: flex;
+  align-items: end;
+  gap: 1rem;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
