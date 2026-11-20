@@ -117,8 +117,11 @@ export async function getProduct(slug: string): Promise<Product> {
 const post = (path: string, body: unknown) =>
   send(path, { method: 'POST', body: JSON.stringify(snakeize(body)) })
 
+// Callers may hold richer lines (names, images); the API gets only these three fields.
+const wireItem = ({ productId, quantity, price }: CartItem): CartItem => ({ productId, quantity, price })
+
 export async function checkCart(items: CartItem[]): Promise<CartCheckResult> {
-  const raw = await post('/cart/check', { items })
+  const raw = await post('/cart/check', { items: items.map(wireItem) })
   if (raw.status !== 200) unexpected(raw)
   return camelize(parse(cartCheckWire, raw))
 }
@@ -142,7 +145,7 @@ export async function placeOrder(input: {
     // customer keys are already single words; only cart_token and item keys need converting
     body: JSON.stringify({
       cart_token: input.cartToken,
-      items: snakeize(input.items),
+      items: snakeize(input.items.map(wireItem)),
       customer: input.customer,
     }),
   })

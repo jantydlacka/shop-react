@@ -92,6 +92,19 @@ describe('catalog', () => {
 })
 
 describe('checkCart', () => {
+  test('sends only productId, quantity and price of each item', async () => {
+    let body: unknown
+    server.use(
+      http.post('*/api/cart/check', async ({ request }) => {
+        body = await request.json()
+        return HttpResponse.json({ items: [], messages: [] })
+      }),
+    )
+    const line = { productId: 1, quantity: 2, price: 64900, slug: 's', name: 'N', imageUrl: null, maxQuantity: 5 }
+    await checkCart([line])
+    expect(body).toEqual({ items: [{ product_id: 1, quantity: 2, price: 64900 }] })
+  })
+
   test('posts snake_case items and returns camelCase', async () => {
     let body: unknown
     server.use(
