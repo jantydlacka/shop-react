@@ -10,9 +10,9 @@ import styles from './ProductPage.module.css'
 
 export function ProductPage() {
   const { slug = '' } = useParams()
-  const { add } = useCart()
-  const [qty, setQty] = useState(1)
-  const [added, setAdded] = useState(false)
+  const { add, items } = useCart()
+  const [qty, setQty] = useState('1')
+  const [feedback, setFeedback] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
   const query = useQuery({ queryKey: ['product', slug], queryFn: () => getProduct(slug) })
 
   if (query.isPending) return <Skeleton />
@@ -33,8 +33,19 @@ export function ProductPage() {
 
   function submit(event: FormEvent) {
     event.preventDefault()
-    add(product, qty)
-    setAdded(true)
+    const wanted = Number(qty)
+    if (qty.trim() === '' || !Number.isInteger(wanted) || wanted < 1 || wanted > product.maxQuantity) {
+      setFeedback({ kind: 'error', text: `Zadejte počet od 1 do ${product.maxQuantity}.` })
+      return
+    }
+    const before = items.find((l) => l.productId === product.id)?.quantity ?? 0
+    const after = Math.min(before + wanted, product.maxQuantity)
+    add(product, wanted)
+    setFeedback(
+      after < before + wanted
+        ? { kind: 'error', text: `V košíku je maximum ${product.maxQuantity} ks.` }
+        : { kind: 'ok', text: 'Přidáno do košíku' },
+    )
   }
 
   return (
@@ -45,7 +56,7 @@ export function ProductPage() {
         <p>{product.description}</p>
         <p className={styles.price}>{formatPrice(product.price)}</p>
         <p>{soldOut ? 'Vyprodáno' : `Skladem: ${product.stock}`}</p>
-        <form onSubmit={submit} className={styles.form}>
+        <form onSubmit={submit} noValidate className={styles.form}>
           <label>
             Množství
             <input
@@ -55,9 +66,10 @@ export function ProductPage() {
               step={1}
               value={qty}
               disabled={soldOut}
+              required
               onChange={(e) => {
-                setQty(e.target.valueAsNumber)
-                setAdded(false)
+                setQty(e.target.value)
+                setFeedback(null)
               }}
             />
           </label>
@@ -65,7 +77,7 @@ export function ProductPage() {
             {soldOut ? 'Vyprodáno' : 'Přidat do košíku'}
           </button>
         </form>
-        <p role="status">{added ? 'Přidáno do košíku' : ''}</p>
+        <p role="status">{feedback?.text ?? ''}</p>
       </div>
     </article>
   )

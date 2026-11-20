@@ -47,3 +47,10 @@ test('shows sold out badge on cards with zero stock', async () => {
   renderWithProviders('/')
   expect(await screen.findByText('Vyprodáno')).toBeInTheDocument()
 })
+
+test('shows category not found', async () => {
+  server.use(http.get('*/api/products', () => new HttpResponse(null, { status: 404 })))
+  renderWithProviders('/kategorie/nic')
+  expect(await screen.findByRole('heading', { name: 'Kategorie nenalezena' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Zpět do katalogu' })).toHaveAttribute('href', '/')
+})
