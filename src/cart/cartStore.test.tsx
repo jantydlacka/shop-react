@@ -118,4 +118,74 @@ describe('cart store', () => {
     act(() => result.current.add(product(), 2))
     expect(result.current.count).toBe(2)
   })
+
+  it('add ignores invalid quantities', () => {
+    const { result } = setup()
+    const token = result.current.token
+    for (const qty of [Number.NaN, 1.5, 0, -1]) act(() => result.current.add(product(), qty))
+    expect(result.current.items).toEqual([])
+    expect(result.current.token).toBe(token)
+    act(() => result.current.add(product(), 2))
+    const t2 = result.current.token
+    act(() => result.current.add(product(), Number.NaN))
+    expect(result.current.items[0]!.quantity).toBe(2)
+    expect(result.current.token).toBe(t2)
+  })
+
+  it('setQuantity ignores NaN and fractions', () => {
+    const { result } = setup()
+    act(() => result.current.add(product(), 2))
+    const token = result.current.token
+    act(() => result.current.setQuantity(1, Number.NaN))
+    act(() => result.current.setQuantity(1, 1.5))
+    expect(result.current.items[0]!.quantity).toBe(2)
+    expect(result.current.token).toBe(token)
+  })
+
+  it('removes a line merged down to zero', () => {
+    const { result } = setup()
+    act(() => result.current.add(product(), 2))
+    act(() => result.current.add(product({ maxQuantity: 0 }), 1))
+    expect(result.current.items).toEqual([])
+    expect(result.current.count).toBe(0)
+  })
+
+  it('does not add an out-of-stock product', () => {
+    const { result } = setup()
+    const token = result.current.token
+    act(() => result.current.add(product({ maxQuantity: 0 }), 1))
+    expect(result.current.items).toEqual([])
+    expect(result.current.token).toBe(token)
+  })
+
+  it('replace ignores unknown ids and invalid quantities', () => {
+    const { result } = setup()
+    act(() => result.current.add(product(), 2))
+    const token = result.current.token
+    act(() => result.current.replace([{ productId: 1, quantity: 2, price: 10000 }, { productId: 9, quantity: 1, price: 1 }]))
+    expect(result.current.items).toHaveLength(1)
+    expect(result.current.token).toBe(token)
+    act(() => result.current.replace([{ productId: 1, quantity: 1.5, price: 10000 }]))
+    expect(result.current.items).toEqual([])
+  })
+
+  it('a merge refreshes the product snapshot', () => {
+    const { result } = setup()
+    act(() => result.current.add(product(), 2))
+    act(() => result.current.add(product({ name: 'Kladivo XL', maxQuantity: 9, imageUrl: '/i.png' }), 0.5 + 0.5))
+    expect(result.current.items[0]).toMatchObject({ quantity: 3, name: 'Kladivo XL', maxQuantity: 9, imageUrl: '/i.png' })
+    act(() => result.current.add(product({ name: 'Kladivo XL', maxQuantity: 3, imageUrl: '/i.png' }), 1))
+    expect(result.current.items[0]).toMatchObject({ quantity: 3, maxQuantity: 3 })
+  })
+
+  it('starts empty when stored quantities are negative or fractional', () => {
+    const l = { productId: 1, price: 1, slug: 's', name: 'n', imageUrl: null, maxQuantity: 5 }
+    for (const quantity of [-1, 1.5, 0]) {
+      localStorage.setItem(KEY, JSON.stringify({ version: 1, token: 'x', items: [{ ...l, quantity }] }))
+      const { result, unmount } = setup()
+      expect(result.current.items).toEqual([])
+      expect(result.current.token).not.toBe('x')
+      unmount()
+    }
+  })
 })

@@ -157,6 +157,19 @@ describe('placeOrder', () => {
     }
   })
 
+  test('sends only productId, quantity and price of each item', async () => {
+    let body: { items?: unknown } = {}
+    server.use(
+      http.post('*/api/orders', async ({ request }) => {
+        body = (await request.json()) as { items?: unknown }
+        return HttpResponse.json({ data: wire.order }, { status: 201 })
+      }),
+    )
+    const line = { productId: 1, quantity: 2, price: 64900, slug: 's', name: 'N', imageUrl: null, maxQuantity: 5 }
+    await placeOrder({ ...order, items: [line] })
+    expect(body.items).toEqual([{ product_id: 1, quantity: 2, price: 64900 }])
+  })
+
   test('200 (retry of an already placed order) gives kind placed', async () => {
     server.use(http.post('*/api/orders', () => HttpResponse.json({ data: wire.order })))
     expect((await placeOrder(order)).kind).toBe('placed')

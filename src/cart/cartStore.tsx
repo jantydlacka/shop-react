@@ -15,24 +15,39 @@ const fresh = (items: CartLine[] = []): CartState => ({ items, token: crypto.ran
 
 const same = (a: CartLine[], b: CartLine[]) =>
   a.length === b.length &&
-  a.every((l, i) => l.productId === b[i]!.productId && l.quantity === b[i]!.quantity && l.price === b[i]!.price)
+  a.every((l, i) => l.productId === b[i]!.productId && l.quantity === b[i]!.quantity && l.price === b[i]!.price && l.maxQuantity === b[i]!.maxQuantity)
 
 // A new token only when the contents differ, so an unchanged cart can be retried safely.
 const next = (state: CartState, items: CartLine[]): CartState =>
   same(state.items, items) ? state : fresh(items)
 
 const cap = (qty: number, max: number) => Math.min(Math.max(qty, 0), max)
+const validQty = (qty: number) => Number.isInteger(qty) && qty > 0
 
 function reducer(state: CartState, action: Action): CartState {
   switch (action.type) {
     case 'add': {
       const { product, qty } = action
+      if (!validQty(qty)) return state
       const existing = state.items.find((l) => l.productId === product.id)
       if (existing) {
         const quantity = cap(existing.quantity + qty, product.maxQuantity)
         return next(
           state,
-          state.items.map((l) => (l === existing ? { ...l, quantity, maxQuantity: product.maxQuantity } : l)),
+          state.items
+            .map((l) =>
+              l === existing
+                ? {
+                    ...l,
+                    quantity,
+                    slug: product.slug,
+                    name: product.name,
+                    imageUrl: product.imageUrl,
+                    maxQuantity: product.maxQuantity,
+                  }
+                : l,
+            )
+            .filter((l) => l.quantity > 0),
         )
       }
       const quantity = cap(qty, product.maxQuantity)
@@ -49,6 +64,7 @@ function reducer(state: CartState, action: Action): CartState {
       return next(state, [...state.items, line])
     }
     case 'setQuantity': {
+      if (!Number.isInteger(action.qty)) return state
       const quantity = (l: CartLine) => cap(action.qty, l.maxQuantity)
       const items = state.items
         .map((l) => (l.productId === action.productId ? { ...l, quantity: quantity(l) } : l))
@@ -64,7 +80,7 @@ function reducer(state: CartState, action: Action): CartState {
       const items: CartLine[] = []
       for (const server of action.items) {
         const existing = state.items.find((l) => l.productId === server.productId)
-        if (existing) items.push({ ...existing, quantity: server.quantity, price: server.price })
+        if (existing && validQty(server.quantity)) items.push({ ...existing, quantity: server.quantity, price: server.price })
       }
       return next(state, items)
     }
