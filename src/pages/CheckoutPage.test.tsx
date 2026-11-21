@@ -45,6 +45,9 @@ const recordOrders = (bodies: { cart_token: string }[], reply: () => Response | 
 
 const created = () => HttpResponse.json({ data: wire.order }, { status: 201 })
 
+const ALREADY_ORDERED =
+  'Z tohoto košíku už byla odeslána objednávka č. 2026000001. Košík jsme ponechali – zkontrolujte ho a odešlete objednávku znovu, vznikne nová.'
+
 test('validates fields with Czech messages', async () => {
   let calls = 0
   recordOrders([], () => {
@@ -187,12 +190,12 @@ test('shows the throttling message', async () => {
 
 test('keeps the items and renews the token when already ordered', async () => {
   recordOrders([], () =>
-    HttpResponse.json({ code: 'cart_already_ordered', messages: ['Tento košík už byl objednán.'] }, { status: 409 }),
+    HttpResponse.json({ code: 'cart_already_ordered', messages: [ALREADY_ORDERED] }, { status: 409 }),
   )
   renderWithProviders('/pokladna', [line])
   await fillValid()
   await submit()
-  expect(await screen.findByText('Tento košík už byl objednán.')).toBeInTheDocument()
+  expect(await screen.findByText(ALREADY_ORDERED)).toBeInTheDocument()
   const stored = JSON.parse(localStorage.getItem('shop-react:cart')!)
   expect(stored.items).toHaveLength(1)
   expect(stored.items[0].quantity).toBe(2)
@@ -205,12 +208,12 @@ test('allows a new order after already ordered', async () => {
   recordOrders(bodies, () => {
     if (!first) return created()
     first = false
-    return HttpResponse.json({ code: 'cart_already_ordered', messages: ['Tento košík už byl objednán.'] }, { status: 409 })
+    return HttpResponse.json({ code: 'cart_already_ordered', messages: [ALREADY_ORDERED] }, { status: 409 })
   })
   renderWithProviders('/pokladna', [line])
   await fillValid()
   await submit()
-  await screen.findByText('Tento košík už byl objednán.')
+  await screen.findByText(ALREADY_ORDERED)
   await waitFor(() => expect(screen.getByRole('button', { name: 'Odeslat objednávku' })).toBeEnabled())
   await submit()
   expect(await screen.findByText('Děkujeme za objednávku')).toBeInTheDocument()
