@@ -1,18 +1,8 @@
 .detail {
-  position: relative;
-  isolation: isolate;
+  composes: paper from '../styles/Label.module.css';
   display: grid;
   gap: 1.5rem;
   padding: 1.5rem;
-}
-
-.detail::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--paper);
-  clip-path: var(--label-cut);
 }
 
 @media (min-width: 48rem) {
@@ -54,16 +44,12 @@
 }
 
 .stamp {
+  composes: stamp from '../styles/Label.module.css';
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) rotate(-12deg);
-  padding: 0.125rem 0.75rem;
-  border: 3px solid var(--red);
-  background: var(--paper);
-  color: var(--red);
-  font: 700 2rem/1.2 var(--font-display);
-  white-space: nowrap;
+  font-size: 2rem;
 }
 
 .form {

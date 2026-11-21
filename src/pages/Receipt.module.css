@@ -1,16 +1,6 @@
 .sheet {
-  position: relative;
-  isolation: isolate;
+  composes: paper from '../styles/Label.module.css';
   padding: 1.5rem;
-}
-
-.sheet::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--paper);
-  clip-path: var(--label-cut);
 }
 
 .sheet > h2:first-of-type {
@@ -30,6 +20,7 @@
   padding: 0.5rem 0;
   border-bottom: 1px dashed var(--kraft-dk);
   font-variant-numeric: lining-nums tabular-nums;
+  text-wrap: balance;
 }
 
 .rows strong {

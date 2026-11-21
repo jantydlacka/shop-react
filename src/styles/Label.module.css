@@ -1,0 +1,24 @@
+.paper {
+  position: relative;
+  isolation: isolate;
+}
+
+.paper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--paper);
+  clip-path: var(--label-cut);
+}
+
+.stamp {
+  padding: 0.125rem 0.75rem;
+  border: 3px solid var(--red);
+  background: var(--paper);
+  color: var(--red);
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
