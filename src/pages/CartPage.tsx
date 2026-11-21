@@ -8,7 +8,7 @@ import { ProductImage } from '../components/ProductImage'
 import { formatPrice } from '../format'
 import styles from './CartPage.module.css'
 
-function CartRow({ line }: { line: CartLine }) {
+function CartRow({ line, locked }: { line: CartLine; locked: boolean }) {
   const { setQuantity, remove } = useCart()
   const [qty, setQty] = useState(String(line.quantity))
   const [error, setError] = useState<string | null>(null)
@@ -40,14 +40,17 @@ function CartRow({ line }: { line: CartLine }) {
             max={line.maxQuantity}
             step={1}
             value={qty}
+            disabled={locked}
             onChange={(e) => {
               setQty(e.target.value)
               setError(null)
             }}
           />
         </label>
-        <button type="submit">Uložit</button>
-        <button type="button" onClick={() => remove(line.productId)}>
+        <button type="submit" disabled={locked}>
+          Uložit
+        </button>
+        <button type="button" disabled={locked} onClick={() => remove(line.productId)}>
           Odebrat
         </button>
         <p role="alert">{error ?? ''}</p>
@@ -102,13 +105,16 @@ export function CartPage() {
     )
   }
 
+  // The server answer replaces quantities, so edits during the check would be lost.
+  const locked = check.isFetching
   const total = items.reduce((sum, l) => sum + l.price * l.quantity, 0)
 
   return (
     <section>
       <h2>Košík</h2>
       {notices}
-      {check.isError && (
+      {locked && <p role="status">Ověřuji ceny a sklad…</p>}
+      {check.isError && !locked && (
         <div role="alert" className={styles.warning}>
           <p>Nepodařilo se ověřit aktuální ceny a sklad.</p>
           <button type="button" onClick={() => void check.refetch()}>
@@ -118,13 +124,19 @@ export function CartPage() {
       )}
       <ul className={styles.lines}>
         {items.map((l) => (
-          <CartRow key={`${l.productId}:${l.quantity}`} line={l} />
+          <CartRow key={`${l.productId}:${l.quantity}`} line={l} locked={locked} />
         ))}
       </ul>
       <p data-testid="cart-total" className={styles.total}>
         Celkem: <strong>{formatPrice(total)}</strong>
       </p>
-      <Link to="/pokladna">Pokračovat k pokladně</Link>
+      {locked ? (
+        <span aria-disabled="true" className={styles.disabledLink}>
+          Pokračovat k pokladně
+        </span>
+      ) : (
+        <Link to="/pokladna">Pokračovat k pokladně</Link>
+      )}
     </section>
   )
 }

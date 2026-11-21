@@ -43,3 +43,9 @@
   font-size: 1.25rem;
   text-align: right;
 }
+
+.disabledLink {
+  color: #888;
+  text-decoration: underline;
+  cursor: not-allowed;
+}

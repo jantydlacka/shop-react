@@ -119,9 +119,105 @@ test('shows messages when the server emptied the cart', async () => {
 test('rejects an invalid quantity', async () => {
   renderWithProviders('/kosik', [line])
   const qty = await screen.findByLabelText('Množství')
+  await waitFor(() => expect(qty).toBeEnabled())
   await userEvent.clear(qty)
   await userEvent.type(qty, '11')
   await userEvent.click(screen.getByRole('button', { name: 'Uložit' }))
   expect(await screen.findByText('Zadejte počet od 1 do 10.')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Košík (2)' })).toBeInTheDocument()
+})
+
+const gate = () => {
+  let open!: () => void
+  const opened = new Promise<void>((resolve) => (open = resolve))
+  return { open, opened }
+}
+
+const controlsDisabled = (disabled: boolean) => {
+  const check = (el: HTMLElement) => (disabled ? expect(el).toBeDisabled() : expect(el).toBeEnabled())
+  check(screen.getByLabelText('Množství'))
+  check(screen.getByRole('button', { name: 'Uložit' }))
+  check(screen.getByRole('button', { name: 'Odebrat' }))
+  const checkout = screen.getByText('Pokračovat k pokladně')
+  if (disabled) {
+    expect(checkout).toHaveAttribute('aria-disabled', 'true')
+    expect(checkout.closest('a')).toBeNull()
+  } else {
+    expect(checkout.closest('a')).toHaveAttribute('href', '/pokladna')
+  }
+}
+
+test('locks the cart while checking', async () => {
+  const g = gate()
+  server.use(
+    http.post('*/api/cart/check', async () => {
+      await g.opened
+      return HttpResponse.json({ items: [{ product_id: 1, quantity: 2, price: 64900 }], messages: [] })
+    }),
+  )
+  renderWithProviders('/kosik', [line])
+  expect(await screen.findByText('Ověřuji ceny a sklad…')).toHaveAttribute('role', 'status')
+  controlsDisabled(true)
+  g.open()
+  await waitFor(() => expect(screen.queryByText('Ověřuji ceny a sklad…')).not.toBeInTheDocument())
+  controlsDisabled(false)
+})
+
+test('keeps the cart locked during retry', async () => {
+  let fail = true
+  const g = gate()
+  server.use(
+    http.post('*/api/cart/check', async () => {
+      if (fail) return new HttpResponse(null, { status: 500 })
+      await g.opened
+      return HttpResponse.json({ items: [{ product_id: 1, quantity: 2, price: 64900 }], messages: [] })
+    }),
+  )
+  renderWithProviders('/kosik', [line])
+  await screen.findByText('Nepodařilo se ověřit aktuální ceny a sklad.')
+  controlsDisabled(false)
+  fail = false
+  await userEvent.click(screen.getByRole('button', { name: 'Zkusit znovu' }))
+  expect(await screen.findByText('Ověřuji ceny a sklad…')).toBeInTheDocument()
+  controlsDisabled(true)
+  g.open()
+  await waitFor(() => expect(screen.queryByText('Ověřuji ceny a sklad…')).not.toBeInTheDocument())
+  controlsDisabled(false)
+})
+
+test('sums the total across lines', async () => {
+  const second: CartLine = { ...line, productId: 2, slug: 'kolumbie', name: 'Kolumbie', price: 28900, quantity: 1 }
+  server.use(
+    checkReply([
+      { product_id: 1, quantity: 2, price: 64900 },
+      { product_id: 2, quantity: 1, price: 28900 },
+    ]),
+  )
+  renderWithProviders('/kosik', [line, second])
+  await waitFor(() => expect(screen.getAllByLabelText('Množství')[0]).toBeEnabled())
+  expect(total()).toHaveTextContent(/1\s?587/)
+})
+
+test('checks again after leaving and returning', async () => {
+  let calls = 0
+  server.use(
+    http.post('*/api/cart/check', () => {
+      calls++
+      return HttpResponse.json({ items: [{ product_id: 1, quantity: 2, price: 64900 }], messages: [] })
+    }),
+  )
+  renderWithProviders('/kosik', [line])
+  await waitFor(() => expect(calls).toBe(1))
+  await userEvent.click(screen.getByRole('link', { name: 'Obchod' }))
+  await waitFor(() => expect(screen.queryByLabelText('Množství')).not.toBeInTheDocument())
+  await userEvent.click(screen.getByRole('link', { name: 'Košík (2)' }))
+  await screen.findByLabelText('Množství')
+  await waitFor(() => expect(calls).toBe(2))
+})
+
+test('announces server messages as a status', async () => {
+  server.use(checkReply([{ product_id: 1, quantity: 2, price: 64900 }], ['Cena se změnila.']))
+  renderWithProviders('/kosik', [line])
+  const note = await screen.findByText('Cena se změnila.')
+  expect(note.closest('[role="status"]')).not.toBeNull()
 })
