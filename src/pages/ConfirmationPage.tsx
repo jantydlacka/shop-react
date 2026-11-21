@@ -1,5 +1,6 @@
 import { Link, useLocation, useParams } from 'react-router'
 import { loadOrder, parseOrder } from '../checkout/orderStorage'
+import { PageTitle } from '../components/PageTitle'
 import { formatPrice } from '../format'
 
 const REPLAYED_NOTICE =
@@ -14,6 +15,7 @@ export function ConfirmationPage() {
   if (!order) {
     return (
       <section>
+        <PageTitle page="Objednávka" />
         <h2>Objednávka</h2>
         <p>Objednávku tu už nevidíme. Potvrzení jsme poslali e-mailem.</p>
         <Link to="/">Zpět do katalogu</Link>
@@ -23,6 +25,7 @@ export function ConfirmationPage() {
 
   return (
     <section>
+      <PageTitle page={order.number ? `Objednávka ${order.number}` : 'Objednávka'} />
       <h2>Děkujeme za objednávku</h2>
       {order.number && <p>Číslo objednávky: <strong>{order.number}</strong></p>}
       {order.replayed && (

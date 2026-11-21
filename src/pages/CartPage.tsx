@@ -7,6 +7,7 @@ import { parseQuantity } from '../cart/quantity'
 import { ProductImage } from '../components/ProductImage'
 import { formatPrice } from '../format'
 import styles from './CartPage.module.css'
+import { PageTitle } from '../components/PageTitle'
 
 function CartRow({ line, locked }: { line: CartLine; locked: boolean }) {
   const { setQuantity, remove } = useCart()
@@ -105,6 +106,7 @@ export function CartPage() {
   if (items.length === 0) {
     return (
       <section>
+        <PageTitle page="Košík" />
         <h2>Košík</h2>
         {notices}
         <p>Košík je prázdný</p>
@@ -119,6 +121,7 @@ export function CartPage() {
 
   return (
     <section>
+      <PageTitle page="Košík" />
       <h2>Košík</h2>
       {notices}
       {locked && <p role="status">Ověřuji ceny a sklad…</p>}

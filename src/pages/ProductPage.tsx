@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router'
 import { ApiError, getProduct } from '../api/client'
 import { useCart } from '../cart/cartStore'
 import { parseQuantity } from '../cart/quantity'
+import { PageTitle } from '../components/PageTitle'
 import { ProductImage } from '../components/ProductImage'
 import { ErrorState, Skeleton } from '../components/Status'
 import { formatPrice } from '../format'
@@ -16,17 +17,18 @@ export function ProductPage() {
   const [feedback, setFeedback] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
   const query = useQuery({ queryKey: ['product', slug], queryFn: () => getProduct(slug) })
 
-  if (query.isPending) return <Skeleton />
+  if (query.isPending) return <><PageTitle /><Skeleton /></>
   if (query.isError) {
     if (query.error instanceof ApiError && query.error.status === 404) {
       return (
         <section>
+          <PageTitle page="Produkt nenalezen" />
           <h2>Produkt nenalezen</h2>
           <Link to="/">Zpět do katalogu</Link>
         </section>
       )
     }
-    return <ErrorState onRetry={() => void query.refetch()} />
+    return <><PageTitle /><ErrorState onRetry={() => void query.refetch()} /></>
   }
 
   const product = query.data
@@ -52,6 +54,7 @@ export function ProductPage() {
 
   return (
     <article className={styles.detail}>
+      <PageTitle page={product.name} />
       <ProductImage url={product.imageUrl} alt={product.name} />
       <div>
         <h2>{product.name}</h2>

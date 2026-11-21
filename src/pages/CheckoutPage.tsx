@@ -6,6 +6,7 @@ import { ApiError, placeOrder } from '../api/client'
 import { useCart } from '../cart/cartStore'
 import { checkoutSchema, fieldLabels, type CheckoutValues } from '../checkout/schema'
 import { saveOrder } from '../checkout/orderStorage'
+import { PageTitle } from '../components/PageTitle'
 import { formatPrice } from '../format'
 import styles from './CheckoutPage.module.css'
 
@@ -113,6 +114,7 @@ export function CheckoutPage() {
 
   return (
     <section>
+      <PageTitle page="Pokladna" />
       <h2>Pokladna</h2>
       <h3>Souhrn objednávky</h3>
       <ul className={styles.summary}>
