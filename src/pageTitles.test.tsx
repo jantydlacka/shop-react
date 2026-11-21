@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { afterEach, expect, test } from 'vitest'
 import { server } from './test/handlers'
@@ -34,15 +35,24 @@ test('confirmation title carries the order number', async () => {
   await waitFor(() => expect(document.title).toBe('Objednávka 2026-0007 – Obchod'))
 })
 
-test('unknown product and category say so in the title', async () => {
+test('unknown product says so in the title', async () => {
   server.use(http.get('*/api/products/:slug', () => new HttpResponse(null, { status: 404 })))
   renderWithProviders('/produkt/nic')
   await screen.findByRole('heading', { name: 'Produkt nenalezen' })
   expect(document.title).toBe('Produkt nenalezen – Obchod')
 })
 
-test('pages do not stack their titles in head', async () => {
-  renderWithProviders('/kosik')
+test('unknown category says so in the title', async () => {
+  server.use(http.get('*/api/products', () => new HttpResponse(null, { status: 404 })))
+  renderWithProviders('/kategorie/nic')
+  await screen.findByRole('heading', { name: 'Kategorie nenalezena' })
+  expect(document.title).toBe('Kategorie nenalezena – Obchod')
+})
+
+test('navigating replaces the title instead of stacking another one', async () => {
+  renderWithProviders('/produkt/espresso-blend')
+  await waitFor(() => expect(document.title).toBe('Espresso blend 1 kg – Obchod'))
+  await userEvent.click(screen.getByRole('link', { name: 'Košík (0)' }))
   await waitFor(() => expect(document.title).toBe('Košík – Obchod'))
   expect(document.querySelectorAll('title')).toHaveLength(1)
 })
