@@ -7,9 +7,25 @@ export type StoredOrder = { items: Record<number, number>; order: OrderWire }
 const ORDERS_KEY = 'shop-react-demo-orders'
 const SEQ_KEY = 'shop-react-demo-order-seq'
 
+function safeGet(key: string): string | null {
+  try {
+    return sessionStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+function safeSet(key: string, value: string): void {
+  try {
+    sessionStorage.setItem(key, value)
+  } catch {
+    // storage unavailable: the demo keeps working without replay or persistence
+  }
+}
+
 function readOrders(): Record<string, StoredOrder> {
   try {
-    const parsed: unknown = JSON.parse(sessionStorage.getItem(ORDERS_KEY) ?? '{}')
+    const parsed: unknown = JSON.parse(safeGet(ORDERS_KEY) ?? '{}')
     return parsed !== null && typeof parsed === 'object' ? (parsed as Record<string, StoredOrder>) : {}
   } catch {
     return {}
@@ -17,7 +33,7 @@ function readOrders(): Record<string, StoredOrder> {
 }
 
 function readSeq(): number {
-  const value = Number(sessionStorage.getItem(SEQ_KEY))
+  const value = Number(safeGet(SEQ_KEY))
   return Number.isInteger(value) && value > 0 ? value : 0
 }
 
@@ -28,12 +44,12 @@ export function loadOrder(token: string): StoredOrder | undefined {
 }
 
 export function saveOrder(token: string, stored: StoredOrder): void {
-  sessionStorage.setItem(ORDERS_KEY, JSON.stringify({ ...readOrders(), [token]: stored }))
+  safeSet(ORDERS_KEY, JSON.stringify({ ...readOrders(), [token]: stored }))
 }
 
 export function nextOrderNumber(): string {
   const seq = readSeq() + 1
-  sessionStorage.setItem(SEQ_KEY, String(seq))
+  safeSet(SEQ_KEY, String(seq))
   return format(seq)
 }
 

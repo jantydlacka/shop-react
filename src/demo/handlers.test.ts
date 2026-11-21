@@ -137,4 +137,14 @@ describe('hooks', () => {
     )
     expect(await checkCart([{ productId: 1, quantity: 1, price: 64900 }])).toEqual({ items: [], messages: ['hook'] })
   })
+
+  it('lets a beforeOrder hook response override the normal answer', async () => {
+    globalServer.use(
+      ...createDemoHandlers({
+        beforeOrder: () => Response.json({ code: 'too_many_orders', messages: ['hook'] }, { status: 429 }),
+      }),
+    )
+    const result = await placeOrder({ cartToken: 'h', items: [{ productId: 1, quantity: 1, price: 64900 }], customer })
+    expect(result).toEqual({ kind: 'throttled', message: 'hook' })
+  })
 })

@@ -3,12 +3,12 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 
-if (import.meta.env.MODE === 'demo') {
-  await (await import('./demo/start')).startDemo()
-}
+const started = import.meta.env.MODE !== 'demo' || (await (await import('./demo/start')).startDemo())
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+if (started) {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  )
+}

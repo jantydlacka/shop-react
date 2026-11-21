@@ -1,24 +1,26 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react'
 import { copyFileSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 
 // Demo build: ships the MSW worker script and a 404.html copy of index.html,
 // so deep links on GitHub Pages load the app.
 function demoAssets(): Plugin {
+  let root = ''
   let outDir = ''
   return {
     name: 'demo-assets',
     apply: 'build',
     configResolved(config) {
-      outDir = join(config.root, config.build.outDir)
+      root = config.root
+      outDir = resolve(config.root, config.build.outDir)
     },
     generateBundle() {
       this.emitFile({
         type: 'asset',
         fileName: 'mockServiceWorker.js',
-        source: readFileSync(join(process.cwd(), 'node_modules/msw/lib/mockServiceWorker.js')),
+        source: readFileSync(join(root, 'node_modules/msw/lib/mockServiceWorker.js')),
       })
     },
     closeBundle() {

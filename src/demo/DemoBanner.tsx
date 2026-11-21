@@ -10,3 +10,12 @@ export function DemoBanner() {
     </div>
   )
 }
+
+export function DemoStartError() {
+  return (
+    <div role="alert" className={styles.banner}>
+      Ukázka potřebuje service worker, který prohlížeč zablokoval. Povolte ho pro tuto stránku nebo zkuste jiný
+      prohlížeč.
+    </div>
+  )
+}
