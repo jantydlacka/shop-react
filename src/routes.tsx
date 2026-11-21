@@ -1,7 +1,8 @@
 import type { RouteObject } from 'react-router'
 import { Layout } from './components/Layout'
+import { CartPage } from './pages/CartPage'
 import { CatalogPage } from './pages/CatalogPage'
-import { CartPage, CheckoutPage, NotFoundPage, OrderPage } from './pages/Placeholders'
+import { CheckoutPage, NotFoundPage, OrderPage } from './pages/Placeholders'
 import { ProductPage } from './pages/ProductPage'
 
 export const routes: RouteObject[] = [

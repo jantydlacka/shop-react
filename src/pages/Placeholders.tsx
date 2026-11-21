@@ -1,6 +1,5 @@
 import { Link, useParams } from 'react-router'
 
-export const CartPage = () => <h2>Košík</h2>
 export const CheckoutPage = () => <h2>Pokladna</h2>
 
 export function OrderPage() {

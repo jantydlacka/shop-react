@@ -1,0 +1,45 @@
+.lines {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.line {
+  display: grid;
+  grid-template-columns: 5rem 1fr auto auto;
+  align-items: center;
+  gap: 1rem;
+}
+
+.form {
+  display: flex;
+  align-items: end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.notices {
+  padding: 0.75rem 1rem 0.75rem 2rem;
+  border: 1px solid #e0d4a4;
+  border-radius: 6px;
+  background: #fdf9e8;
+}
+
+.warning {
+  padding: 0.75rem 1rem;
+  border: 1px solid #e0b4b4;
+  border-radius: 6px;
+  background: #fdf3f3;
+}
+
+.total {
+  font-size: 1.25rem;
+  text-align: right;
+}

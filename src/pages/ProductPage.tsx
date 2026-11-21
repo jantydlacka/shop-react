@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router'
 import { ApiError, getProduct } from '../api/client'
 import { useCart } from '../cart/cartStore'
+import { parseQuantity } from '../cart/quantity'
 import { ProductImage } from '../components/ProductImage'
 import { ErrorState, Skeleton } from '../components/Status'
 import { formatPrice } from '../format'
@@ -33,11 +34,12 @@ export function ProductPage() {
 
   function submit(event: FormEvent) {
     event.preventDefault()
-    const wanted = Number(qty)
-    if (qty.trim() === '' || !Number.isInteger(wanted) || wanted < 1 || wanted > product.maxQuantity) {
-      setFeedback({ kind: 'error', text: `Zadejte počet od 1 do ${product.maxQuantity}.` })
+    const parsed = parseQuantity(qty, product.maxQuantity)
+    if ('error' in parsed) {
+      setFeedback({ kind: 'error', text: parsed.error })
       return
     }
+    const wanted = parsed.value
     const before = items.find((l) => l.productId === product.id)?.quantity ?? 0
     const after = Math.min(before + wanted, product.maxQuantity)
     add(product, wanted)
