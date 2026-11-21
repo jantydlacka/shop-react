@@ -12,6 +12,7 @@ const item = (productId: number, quantity = 1, price = demoProducts.find((p) => 
 
 beforeEach(() => {
   sessionStorage.clear()
+  localStorage.clear()
   resetDemo()
 })
 
@@ -136,15 +137,24 @@ describe('order-only scenarios', () => {
     expect(armedScenario()).toBe(scenario)
   })
 
+  it('already_ordered cites no number before any order exists', async () => {
+    armScenario('already_ordered')
+    const response = scenarioHooks().beforeOrder({ items: [item(1)] })
+    const body = (await response?.json()) as { messages: string[] }
+    expect(body.messages[0]).toContain('odeslána objednávka.')
+    expect(body.messages[0]).not.toContain('DEMO-')
+  })
+
   it('already_ordered answers 409 with the last order number without using up the sequence', async () => {
+    nextOrderNumber()
     armScenario('already_ordered')
     const response = scenarioHooks().beforeOrder({ items: [item(1)] })
     expect(response?.status).toBe(409)
     const body = (await response?.json()) as { code: string; messages: string[] }
     expect(body.code).toBe('cart_already_ordered')
-    expect(body.messages[0]).toContain('objednávka č. DEMO-0000')
+    expect(body.messages[0]).toContain('objednávka č. DEMO-0001')
     expect(armedScenario()).toBeNull()
-    expect(nextOrderNumber()).toBe('DEMO-0001')
+    expect(nextOrderNumber()).toBe('DEMO-0002')
   })
 
   it('invalid answers 422 with an e-mail error', async () => {
@@ -187,5 +197,11 @@ describe('resetDemo', () => {
     expect(currentProducts()).toEqual(demoProducts)
     expect(armedScenario()).toBeNull()
     expect(lastOrderNumber()).toBe('DEMO-0000')
+  })
+
+  it('leaves the cart alone', () => {
+    localStorage.setItem('shop-react:cart', '{"keep":true}')
+    resetDemo()
+    expect(localStorage.getItem('shop-react:cart')).toBe('{"keep":true}')
   })
 })

@@ -1,8 +1,8 @@
 import { HttpResponse } from 'msw'
 import { clearOverrides, findProduct, setOverride } from './catalog'
 import { alreadyOrderedMessage, refresh, type Hook, type WireItem } from './handlers'
-import { clearOrders, lastOrderNumber } from './orders'
-import { safeGet, safeRemove, safeSet } from './storage'
+import { clearOrders, lastIssuedOrderNumber } from './orders'
+import { session } from './storage'
 
 export type Scenario = 'price_change' | 'sold_out' | 'network' | 'already_ordered' | 'invalid' | 'throttled'
 
@@ -21,13 +21,13 @@ export function subscribe(listener: () => void): () => void {
 }
 
 export function armedScenario(): Scenario | null {
-  const stored = safeGet(KEY)
+  const stored = session.get(KEY)
   return scenarios.find((s) => s === stored) ?? null
 }
 
 export function armScenario(scenario: Scenario | null): void {
-  if (scenario === null) safeRemove(KEY)
-  else safeSet(KEY, scenario)
+  if (scenario === null) session.remove(KEY)
+  else session.set(KEY, scenario)
   notify()
 }
 
@@ -82,7 +82,7 @@ export function scenarioHooks(): { beforeCheck: Hook; beforeOrder: Hook } {
         case 'already_ordered':
           consume()
           return HttpResponse.json(
-            { code: 'cart_already_ordered', messages: [alreadyOrderedMessage(lastOrderNumber())] },
+            { code: 'cart_already_ordered', messages: [alreadyOrderedMessage(lastIssuedOrderNumber())] },
             { status: 409 },
           )
         case 'invalid':

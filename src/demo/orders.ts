@@ -1,6 +1,6 @@
 import type { z } from 'zod'
 import type { orderWire } from '../api/schemas'
-import { safeGet, safeRemove, safeSet } from './storage'
+import { persistent } from './storage'
 
 export type OrderWire = z.infer<typeof orderWire>
 export type StoredOrder = { items: Record<number, number>; order: OrderWire }
@@ -10,7 +10,7 @@ const SEQ_KEY = 'shop-react-demo-order-seq'
 
 function readOrders(): Record<string, StoredOrder> {
   try {
-    const parsed: unknown = JSON.parse(safeGet(ORDERS_KEY) ?? '{}')
+    const parsed: unknown = JSON.parse(persistent.get(ORDERS_KEY) ?? '{}')
     return parsed !== null && typeof parsed === 'object' ? (parsed as Record<string, StoredOrder>) : {}
   } catch {
     return {}
@@ -18,7 +18,7 @@ function readOrders(): Record<string, StoredOrder> {
 }
 
 function readSeq(): number {
-  const value = Number(safeGet(SEQ_KEY))
+  const value = Number(persistent.get(SEQ_KEY))
   return Number.isInteger(value) && value > 0 ? value : 0
 }
 
@@ -29,13 +29,18 @@ export function loadOrder(token: string): StoredOrder | undefined {
 }
 
 export function saveOrder(token: string, stored: StoredOrder): void {
-  safeSet(ORDERS_KEY, JSON.stringify({ ...readOrders(), [token]: stored }))
+  persistent.set(ORDERS_KEY, JSON.stringify({ ...readOrders(), [token]: stored }))
 }
 
 export function nextOrderNumber(): string {
   const seq = readSeq() + 1
-  safeSet(SEQ_KEY, String(seq))
+  persistent.set(SEQ_KEY, String(seq))
   return format(seq)
+}
+
+export function lastIssuedOrderNumber(): string | null {
+  const seq = readSeq()
+  return seq === 0 ? null : format(seq)
 }
 
 export function lastOrderNumber(): string {
@@ -43,6 +48,6 @@ export function lastOrderNumber(): string {
 }
 
 export function clearOrders(): void {
-  safeRemove(ORDERS_KEY)
-  safeRemove(SEQ_KEY)
+  persistent.remove(ORDERS_KEY)
+  persistent.remove(SEQ_KEY)
 }

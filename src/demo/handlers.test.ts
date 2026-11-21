@@ -9,6 +9,7 @@ const NBSP = ' '
 
 beforeEach(() => {
   sessionStorage.clear()
+  localStorage.clear()
   globalServer.use(...createDemoHandlers())
 })
 

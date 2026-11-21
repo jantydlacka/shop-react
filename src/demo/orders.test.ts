@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { lastOrderNumber, loadOrder, nextOrderNumber, saveOrder } from './orders'
 
-beforeEach(() => sessionStorage.clear())
+beforeEach(() => {
+  sessionStorage.clear()
+  localStorage.clear()
+})
 afterEach(() => vi.restoreAllMocks())
 
 describe('order numbers', () => {
@@ -15,6 +18,14 @@ describe('order numbers', () => {
     nextOrderNumber()
     expect(lastOrderNumber()).toBe('DEMO-0001')
     expect(lastOrderNumber()).toBe('DEMO-0001')
+  })
+})
+
+describe('persistence', () => {
+  it('keeps the sequence in localStorage', () => {
+    nextOrderNumber()
+    expect(localStorage.getItem('shop-react-demo-order-seq')).toBe('1')
+    expect(sessionStorage.getItem('shop-react-demo-order-seq')).toBeNull()
   })
 })
 

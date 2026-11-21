@@ -10,7 +10,7 @@ small; the storefront is in Czech, code, comments and docs are in English.
 **[Try the demo](https://jantydlacka.github.io/shop-react/)** – it runs without a server: the
 responses of the API are simulated in the browser by MSW, with the catalogue of the
 [laravel-shop](https://github.com/jantydlacka/laravel-shop/tree/api-for-react-client) demo data.
-A panel at the top lets you trigger the edge cases once each (price change, sold out, network
+A panel at the top lets you trigger each edge case; it fires once per click (price change, sold out, network
 failure, an already ordered cart, a validation error, the order limit). The real API is in
 laravel-shop; the screenshots below come from it.
 

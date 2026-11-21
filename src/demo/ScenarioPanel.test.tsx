@@ -18,6 +18,7 @@ const descriptions = [
 
 beforeEach(() => {
   sessionStorage.clear()
+  localStorage.clear()
   armScenario(null)
 })
 

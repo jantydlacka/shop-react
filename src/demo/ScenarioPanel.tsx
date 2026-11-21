@@ -1,7 +1,7 @@
 import { useId, useState, useSyncExternalStore } from 'react'
 import styles from './Demo.module.css'
 import { armScenario, armedScenario, resetDemo, subscribe, type Scenario } from './scenarios'
-import { safeGet, safeSet } from './storage'
+import { session } from './storage'
 
 const OPEN_KEY = 'shop-react-demo-panel-open'
 
@@ -42,10 +42,10 @@ export function ScenarioPanel() {
   const headingId = useId()
   const bodyId = useId()
   const armed = useSyncExternalStore(subscribe, armedScenario)
-  const [open, setOpen] = useState(() => safeGet(OPEN_KEY) === '1')
+  const [open, setOpen] = useState(() => session.get(OPEN_KEY) === '1')
 
   const toggle = () => {
-    safeSet(OPEN_KEY, open ? '0' : '1')
+    session.set(OPEN_KEY, open ? '0' : '1')
     setOpen(!open)
   }
   const armedLabel = options.find((o) => o.scenario === armed)?.label

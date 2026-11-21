@@ -3,7 +3,7 @@
 set -euo pipefail
 
 dir="${1:-dist}"
-patterns=('mockServiceWorker' 'msw/' 'Ukázka: obchod běží' 'Vyzkoušejte okrajové stavy')
+patterns=('mockServiceWorker' 'msw/' '[MSW]' 'shop-react-demo-' 'Ukázka: obchod běží' 'Vyzkoušejte okrajové stavy')
 
 [ -d "$dir" ] || { echo "check-no-demo: $dir does not exist" >&2; exit 2; }
 
