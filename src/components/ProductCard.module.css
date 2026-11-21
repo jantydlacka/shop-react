@@ -1,61 +1,47 @@
 .card {
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  flex-direction: column;
+  composes: paper from '../styles/Label.module.css';
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
   height: 100%;
   padding: 1rem;
   color: inherit;
   text-decoration: none;
 }
 
-.card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--paper);
-  clip-path: var(--label-cut);
-}
-
 .media {
-  position: relative;
+  grid-area: 1 / 1;
   margin-bottom: 0.75rem;
 }
 
 .name {
+  grid-area: 2 / 1;
   font: 700 1.375rem/1.15 var(--font-display);
   text-wrap: balance;
   overflow-wrap: anywhere;
 }
 
 .price {
-  margin-top: auto;
+  grid-area: 3 / 1;
+  margin-top: 0.5rem;
   padding-top: 0.625rem;
   border-top: 1px dashed var(--kraft-dk);
   font: 700 1.25rem/1.2 var(--font-display);
   font-variant-numeric: lining-nums tabular-nums;
 }
 
-.name + .price {
-  margin-top: 0.5rem;
-}
-
-.soldOut .media > :not(.stamp) {
+.soldOut .media {
   opacity: 0.55;
 }
 
 .stamp {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(-12deg);
-  padding: 0.125rem 0.75rem;
-  border: 3px solid var(--red);
-  background: var(--paper);
-  color: var(--red);
-  font: 700 1.5rem/1.2 var(--font-display);
-  white-space: nowrap;
+  composes: stamp from '../styles/Label.module.css';
+  grid-area: 1 / 1;
+  align-self: center;
+  justify-self: center;
+  margin-bottom: 0.75rem;
+  transform: rotate(-12deg);
+  font-size: 1.5rem;
 }
 
 @media (max-width: 40rem) {
