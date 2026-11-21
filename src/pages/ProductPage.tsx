@@ -60,7 +60,9 @@ export function ProductPage() {
         <h2>{product.name}</h2>
         <p>{product.description}</p>
         <p className={styles.price}>{formatPrice(product.price)}</p>
-        <p>{soldOut ? 'Vyprodáno' : `Skladem: ${product.stock}`}</p>
+        <p className={soldOut ? styles.soldOut : styles.stock}>
+          {soldOut ? 'Vyprodáno' : `Skladem: ${product.stock}`}
+        </p>
         <form onSubmit={submit} noValidate className={styles.form}>
           <label>
             Množství

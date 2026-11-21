@@ -1,18 +1,27 @@
 .skeleton {
   display: grid;
-  gap: 0.75rem;
+  gap: 1.375rem;
 }
 
 .skeleton span {
+  position: relative;
+  isolation: isolate;
   display: block;
   height: 5rem;
-  border-radius: 6px;
-  background: #ececec;
+}
+
+.skeleton span::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--paper);
+  clip-path: var(--label-cut);
 }
 
 .error {
-  padding: 1.5rem;
-  border: 1px solid #e0b4b4;
-  border-radius: 6px;
-  background: #fdf3f3;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid var(--red);
+  background: var(--paper);
+  color: var(--ink);
 }

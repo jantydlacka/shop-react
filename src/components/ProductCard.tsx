@@ -5,12 +5,15 @@ import { ProductImage } from './ProductImage'
 import styles from './ProductCard.module.css'
 
 export function ProductCard({ product }: { product: Product }) {
+  const soldOut = product.stock === 0
   return (
-    <Link to={`/produkt/${product.slug}`} className={styles.card}>
-      <ProductImage url={product.imageUrl} alt="" />
+    <Link to={`/produkt/${product.slug}`} className={soldOut ? `${styles.card} ${styles.soldOut}` : styles.card}>
+      <div className={styles.media}>
+        <ProductImage url={product.imageUrl} alt="" />
+        {soldOut && <span className={styles.stamp}>Vyprodáno</span>}
+      </div>
       <span className={styles.name}>{product.name}</span>
       <span className={styles.price}>{formatPrice(product.price)}</span>
-      {product.stock === 0 && <span className={styles.badge}>Vyprodáno</span>}
     </Link>
   )
 }

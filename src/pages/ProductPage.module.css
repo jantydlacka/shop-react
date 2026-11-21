@@ -1,16 +1,52 @@
 .detail {
+  position: relative;
+  isolation: isolate;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  gap: 2rem;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.detail::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--paper);
+  clip-path: var(--label-cut);
+}
+
+@media (min-width: 48rem) {
+  .detail {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}
+
+.detail > * {
+  min-width: 0;
+}
+
+.detail h2 {
+  margin-top: 0;
 }
 
 .price {
-  font-size: 1.25rem;
+  font: 700 1.5rem/1.2 var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.stock {
   font-weight: 600;
+  color: var(--stamp);
+}
+
+.soldOut {
+  color: var(--red);
 }
 
 .form {
   display: flex;
+  flex-wrap: wrap;
   align-items: end;
   gap: 1rem;
 }
