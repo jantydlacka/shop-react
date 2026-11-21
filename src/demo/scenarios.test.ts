@@ -79,6 +79,14 @@ describe('price_change', () => {
     expect(await response?.json()).toMatchObject({ code: 'cart_changed', items: [{ product_id: 1, price: 69900 }] })
   })
 
+  it('stays armed when the first product is already sold out', () => {
+    armScenario('price_change')
+    expect(scenarioHooks().beforeCheck({ items: [item(4)] })).toBeUndefined()
+    expect(scenarioHooks().beforeOrder({ items: [item(4)] })).toBeUndefined()
+    expect(armedScenario()).toBe('price_change')
+    expect(findProduct(4)?.price).toBe(26900)
+  })
+
   it('stays armed with an empty item list or an unknown first product', () => {
     armScenario('price_change')
     expect(scenarioHooks().beforeCheck({ items: [] })).toBeUndefined()
@@ -153,7 +161,7 @@ describe('order-only scenarios', () => {
     const response = scenarioHooks().beforeOrder({ items: [item(1)] })
     expect(response?.status).toBe(429)
     expect(await response?.json()).toEqual({
-      code: 'throttled',
+      code: 'too_many_orders',
       messages: ['Z vaší adresy přišlo v poslední hodině příliš mnoho objednávek. Zkuste to prosím později.'],
     })
   })

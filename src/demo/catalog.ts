@@ -86,7 +86,8 @@ export function findProduct(id: number): ProductWire | undefined {
 }
 
 export function setOverride(id: number, patch: Override): void {
-  safeSet(OVERRIDES_KEY, JSON.stringify({ ...readOverrides(), [id]: { ...readOverrides()[id], ...patch } }))
+  const overrides = readOverrides()
+  safeSet(OVERRIDES_KEY, JSON.stringify({ ...overrides, [id]: { ...overrides[id], ...patch } }))
 }
 
 export function clearOverrides(): void {

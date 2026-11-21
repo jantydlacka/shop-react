@@ -18,6 +18,8 @@ describe('startDemo', () => {
     const host = document.getElementById('demo-root')
     expect(host?.nextElementSibling?.id).toBe('root')
     expect(await screen.findByRole('note')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Vyzkoušejte okrajové stavy' })).toBeInTheDocument()
+    expect(host).toContainElement(screen.getByRole('complementary'))
   })
 
   it('shows why it cannot start and returns false when the worker fails', async () => {

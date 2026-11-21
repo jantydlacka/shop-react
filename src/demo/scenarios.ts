@@ -40,11 +40,12 @@ export function resetDemo(): void {
 const consume = () => armScenario(null)
 
 // Writes the scenario's effect into the catalog and returns the server's corrected cart.
-// Undefined when there is no usable first item: the scenario stays armed.
+// Undefined when there is no usable first item (none, unknown, or sold out for price_change): the scenario stays armed.
 function changeFirstItem(scenario: 'price_change' | 'sold_out', items: WireItem[]) {
   const first = items[0]
   const product = first && findProduct(first.product_id)
   if (!first || !product) return undefined
+  if (scenario === 'price_change' && product.stock <= 0) return undefined
   setOverride(
     product.id,
     scenario === 'price_change' ? { price: product.price + PRICE_INCREASE } : { stock: 0 },
@@ -94,7 +95,7 @@ export function scenarioHooks(): { beforeCheck: Hook; beforeOrder: Hook } {
           consume()
           return HttpResponse.json(
             {
-              code: 'throttled',
+              code: 'too_many_orders',
               messages: ['Z vaší adresy přišlo v poslední hodině příliš mnoho objednávek. Zkuste to prosím později.'],
             },
             { status: 429 },
