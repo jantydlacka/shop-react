@@ -28,9 +28,11 @@ export function ConfirmationPage() {
     <section className={styles.sheet}>
       <PageTitle page={order.number ? `Objednávka ${order.number}` : 'Objednávka'} />
       <h2>Děkujeme za objednávku</h2>
-      {order.number && <p>
+      {order.number && (
+        <p>
           Číslo objednávky: <strong className={styles.stamp}>{order.number}</strong>
-        </p>}
+        </p>
+      )}
       {order.replayed && (
         <p role="status" className={styles.notice}>{REPLAYED_NOTICE}</p>
       )}

@@ -12,10 +12,11 @@
   border-bottom: 1px dashed var(--kraft-dk);
   font-variant-numeric: lining-nums tabular-nums;
   display: grid;
-  grid-template-columns: 4rem 1fr auto;
+  grid-template-columns: 4rem 1fr;
   grid-template-areas:
-    'img info total'
-    'form form form';
+    'img info'
+    'form form'
+    'total total';
   align-items: center;
   gap: 0.5rem 1rem;
   padding: 1rem 0;
@@ -32,6 +33,7 @@
 
 .lines > li > :nth-child(2) p {
   margin: 0.25rem 0 0;
+  white-space: nowrap;
 }
 
 .lines > li strong {
@@ -40,6 +42,7 @@
 
 .lines > li > :nth-child(4) {
   grid-area: total;
+  justify-self: end;
 }
 
 @media (min-width: 40rem) {
@@ -47,6 +50,10 @@
     grid-template-columns: 5rem 1fr auto auto;
     grid-template-areas: 'img info form total';
     gap: 1rem;
+  }
+
+  .lines > li > :nth-child(4) {
+    justify-self: auto;
   }
 }
 
