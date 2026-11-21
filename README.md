@@ -1,0 +1,98 @@
+# Shop React
+
+CI: `npm run check` on every push (`.github/workflows/ci.yml`).
+
+A React + TypeScript storefront for the coffee & tea shop from **laravel-shop**. It is the same
+shop with a second frontend: the catalogue, the stock, the prices, the quantity cap and the order
+limit all live in laravel-shop and are reached over its JSON API (`/api`). This client holds the
+cart, validates what comes back and places the order. It is a portfolio project, deliberately
+small; the storefront is in Czech, code, comments and docs are in English.
+
+| Catalogue | Product |
+|---|---|
+| ![Catalogue](docs/screenshots/catalog.png) | ![Product](docs/screenshots/product.png) |
+
+| Cart | Checkout after a price change | Confirmation |
+|---|---|---|
+| ![Cart](docs/screenshots/cart.png) | ![Checkout](docs/screenshots/checkout-price-change.png) | ![Confirmation](docs/screenshots/confirmation.png) |
+
+The screenshots were taken in a real browser against the demo data of laravel-shop. The price
+notice in the checkout screenshot is real: the price of the product in the cart was changed on the
+server between adding it and submitting the order.
+
+## Stack
+
+React 19 · TypeScript · Vite · React Router · TanStack Query · React Hook Form · zod ·
+Vitest + Testing Library + MSW
+
+## Running it
+
+The client needs the API, so start laravel-shop first. The API is on the `api-for-react-client`
+branch of laravel-shop – check that branch out and follow the quick start in that README
+(Docker and Sail; `./vendor/bin/sail up -d --wait`, then migrate and seed). The shop then listens on
+<http://localhost:8088>, and confirmation e-mails land in Mailpit once the queue is processed
+(`./vendor/bin/sail artisan queue:work`).
+
+Then, in this repository (Node version from `.nvmrc`):
+
+```bash
+nvm use && npm ci && npm run dev
+```
+
+The dev server proxies `/api` to `http://localhost:8088`. If the API runs elsewhere, set
+`VITE_API_PROXY` (for example `VITE_API_PROXY=http://localhost:8000 npm run dev`).
+
+## Tests and quality
+
+`npm run check` is the single gate (it is what CI runs). It runs, in order:
+
+1. `tsc -p tsconfig.app.json --noEmit` and `tsc -p tsconfig.node.json --noEmit` – type check
+2. `eslint .`
+3. `vitest run` – component and unit tests with the API mocked by MSW (88 tests in 11 files at the time of writing)
+4. `vite build`
+
+## Architecture decisions
+
+**The cart lives in the client, the API is stateless.** The cart is kept in `localStorage`; the
+server only compares it with current prices and stock (`POST /api/cart/check`) and turns it into an
+order (`POST /api/orders`). There is no server session, no cookie and no login.
+
+**The cart token is the idempotency key.** The client generates a UUID with the cart and sends it
+with the order. A retry after a timeout or a double click therefore yields one order: the server
+returns the existing order for the same token and the same items (HTTP 200 instead of 201). The same
+token with different items is refused (409 "already ordered"), and the client then renews the token.
+The token is renewed after an order is placed, so the next purchase is a new one.
+
+**A stale cart is corrected, not rejected silently.** If a price, availability or stock changed, the
+server answers 409 with the current values; the client replaces the cart lines, shows what changed
+and lets the customer submit again.
+
+**zod validates at the API boundary.** Every response is parsed before it reaches the UI, and the
+wire format (snake_case) is mapped to client types in one place. Generating the types from OpenAPI
+(Scramble) was tried and produced wrong types for this API – for example messages typed as string,
+`product_id` as string and `image_url` as null – so the client validates responses with zod instead.
+
+**The form rules mirror the server for UX only.** The checkout schema repeats the server's
+`CheckoutRules` so most mistakes are caught before a request is sent, and it is deliberately looser
+where the two could disagree. The server's 422 is authoritative and is shown field by field.
+
+**Prices are integer hellers** end to end; only the client formats them (`Intl.NumberFormat('cs-CZ')`).
+
+## Known limitations
+
+- **Two tabs share `localStorage` but not in-memory state**, so the last write wins and the other
+  tab shows a stale cart until it is reloaded. Orders stay correct, because the token is tied to the
+  contents of the cart and the server checks prices and stock again.
+- **The order confirmation survives a reload only in the same tab** (`sessionStorage`). There is no
+  order lookup in the API by design – its responses carry no personal data – so a new tab shows
+  "we no longer see the order" and points to the confirmation e-mail.
+- **No end-to-end test suite.** The behaviour was walked through by hand in a real browser against
+  the running API (see the screenshots), but nothing re-runs that automatically.
+- **Server-side limitations apply**, see "Known limitations" in the laravel-shop README: the hourly
+  order limit (10 per IP) is not atomic, so a burst of parallel requests can overshoot it, and
+  behind a reverse proxy `trustProxies` must be configured, otherwise the limit applies to the
+  whole shop.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
