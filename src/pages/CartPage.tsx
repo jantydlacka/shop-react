@@ -50,7 +50,12 @@ function CartRow({ line, locked }: { line: CartLine; locked: boolean }) {
         <button type="submit" disabled={locked}>
           Uložit
         </button>
-        <button type="button" disabled={locked} onClick={() => remove(line.productId)}>
+        <button
+          type="button"
+          aria-label={`Odebrat ${line.name}`}
+          disabled={locked}
+          onClick={() => remove(line.productId)}
+        >
           Odebrat
         </button>
         <p role="alert">{error ?? ''}</p>
@@ -134,7 +139,7 @@ export function CartPage() {
         Celkem: <strong>{formatPrice(total)}</strong>
       </p>
       {locked ? (
-        <span aria-disabled="true" className={styles.disabledLink}>
+        <span role="link" aria-disabled="true" className={styles.disabledLink}>
           Pokračovat k pokladně
         </span>
       ) : (

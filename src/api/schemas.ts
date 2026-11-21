@@ -83,4 +83,3 @@ export type Product = Camel<z.infer<typeof productWire>>
 export type CartItem = Camel<z.infer<typeof cartItemWire>>
 export type CartCheckResult = Camel<z.infer<typeof cartCheckWire>>
 export type Order = Camel<z.infer<typeof orderWire>>
-export type ApiProblem = { code?: string; messages: string[] }

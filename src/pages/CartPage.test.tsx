@@ -55,7 +55,7 @@ test('changes quantity and total', async () => {
 
 test('removes a line', async () => {
   renderWithProviders('/kosik', [line])
-  await userEvent.click(await screen.findByRole('button', { name: 'Odebrat' }))
+  await userEvent.click(await screen.findByRole('button', { name: `Odebrat ${line.name}` }))
   expect(await screen.findByText('Košík je prázdný')).toBeInTheDocument()
 })
 
@@ -137,10 +137,10 @@ const controlsDisabled = (disabled: boolean) => {
   const check = (el: HTMLElement) => (disabled ? expect(el).toBeDisabled() : expect(el).toBeEnabled())
   check(screen.getByLabelText('Množství'))
   check(screen.getByRole('button', { name: 'Uložit' }))
-  check(screen.getByRole('button', { name: 'Odebrat' }))
+  check(screen.getByRole('button', { name: `Odebrat ${line.name}` }))
   const checkout = screen.getByText('Pokračovat k pokladně')
   if (disabled) {
-    expect(checkout).toHaveAttribute('aria-disabled', 'true')
+    expect(screen.getByRole('link', { name: 'Pokračovat k pokladně' })).toHaveAttribute('aria-disabled', 'true')
     expect(checkout.closest('a')).toBeNull()
   } else {
     expect(checkout.closest('a')).toHaveAttribute('href', '/pokladna')
