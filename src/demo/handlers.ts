@@ -7,14 +7,17 @@ export type Hook = (ctx: { items: WireItem[] }) => Response | undefined
 
 const VAT_RATE = 21
 
+export const alreadyOrderedMessage = (number: string | null) =>
+  `Z tohoto košíku už byla odeslána ${number === null ? 'objednávka' : `objednávka č. ${number}`}. Košík jsme ponechali – zkontrolujte ho a odešlete objednávku znovu, vznikne nová.`
+
 // Money::format of the API: whole crowns without decimals, otherwise two decimals with a comma.
-function formatMoney(hellers: number): string {
+export function formatMoney(hellers: number): string {
   const whole = String(Math.floor(hellers / 100)).replace(/\B(?=(\d{3})+$)/g, '\u00a0')
   const rest = hellers % 100
   return `${whole}${rest === 0 ? '' : `,${String(rest).padStart(2, '0')}`}\u00a0Kč`
 }
 
-function refresh(items: WireItem[]): { items: WireItem[]; messages: string[] } {
+export function refresh(items: WireItem[]): { items: WireItem[]; messages: string[] } {
   const kept: WireItem[] = []
   const messages: string[] = []
   for (const item of items) {
@@ -95,9 +98,7 @@ export function createDemoHandlers(options: { beforeCheck?: Hook; beforeOrder?: 
         return HttpResponse.json(
           {
             code: 'cart_already_ordered',
-            messages: [
-              `Z tohoto košíku už byla odeslána objednávka č. ${existing.order.number}. Košík jsme ponechali – zkontrolujte ho a odešlete objednávku znovu, vznikne nová.`,
-            ],
+            messages: [alreadyOrderedMessage(existing.order.number)],
           },
           { status: 409 },
         )

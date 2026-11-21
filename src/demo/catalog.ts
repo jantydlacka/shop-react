@@ -1,5 +1,6 @@
 import type { z } from 'zod'
 import type { categoryWire, productWire } from '../api/schemas'
+import { safeGet, safeRemove, safeSet } from './storage'
 
 export type CategoryWire = z.infer<typeof categoryWire>
 export type ProductWire = z.infer<typeof productWire>
@@ -58,7 +59,7 @@ type Override = { price?: number; stock?: number }
 
 function readOverrides(): Record<number, Override> {
   try {
-    const parsed: unknown = JSON.parse(sessionStorage.getItem(OVERRIDES_KEY) ?? '{}')
+    const parsed: unknown = JSON.parse(safeGet(OVERRIDES_KEY) ?? '{}')
     return parsed !== null && typeof parsed === 'object' ? (parsed as Record<number, Override>) : {}
   } catch {
     return {}
@@ -82,4 +83,12 @@ export function currentProducts(): ProductWire[] {
 
 export function findProduct(id: number): ProductWire | undefined {
   return currentProducts().find((product) => product.id === id)
+}
+
+export function setOverride(id: number, patch: Override): void {
+  safeSet(OVERRIDES_KEY, JSON.stringify({ ...readOverrides(), [id]: { ...readOverrides()[id], ...patch } }))
+}
+
+export function clearOverrides(): void {
+  safeRemove(OVERRIDES_KEY)
 }

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { ApiError, checkCart, getCategories, getProduct, getProducts, placeOrder } from '../api/client'
 import { server as globalServer } from '../test/handlers'
 import { createDemoHandlers } from './handlers'
+import { armScenario, resetDemo, scenarioHooks } from './scenarios'
 
 const customer = { name: 'Jana', email: 'jana@example.com', phone: '123456789', street: 'Ulice 1', city: 'Praha', zip: '11000' }
 const NBSP = ' '
@@ -146,5 +147,50 @@ describe('hooks', () => {
     )
     const result = await placeOrder({ cartToken: 'h', items: [{ productId: 1, quantity: 1, price: 64900 }], customer })
     expect(result).toEqual({ kind: 'throttled', message: 'hook' })
+  })
+})
+
+describe('with scenario hooks', () => {
+  const items = [{ productId: 1, quantity: 1, price: 64900 }]
+
+  beforeEach(() => {
+    resetDemo()
+    globalServer.use(...createDemoHandlers(scenarioHooks()))
+  })
+
+  it('price_change makes the first order attempt report a change and the second one pass', async () => {
+    armScenario('price_change')
+    const first = await placeOrder({ cartToken: 's1', items, customer })
+    if (first.kind !== 'changed') throw new Error(first.kind)
+    expect(first.items).toEqual([{ productId: 1, quantity: 1, price: 69900 }])
+    const second = await placeOrder({ cartToken: 's1', items: first.items, customer })
+    expect(second.kind).toBe('placed')
+  })
+
+  it('network fails the request without a status', async () => {
+    armScenario('network')
+    const error = await placeOrder({ cartToken: 's2', items, customer }).catch((e: unknown) => e)
+    expect(error).toBeInstanceOf(ApiError)
+    expect((error as ApiError).status).toBeNull()
+    expect((await placeOrder({ cartToken: 's2', items, customer })).kind).toBe('placed')
+  })
+
+  it('invalid maps the server error to the e-mail field', async () => {
+    armScenario('invalid')
+    const result = await placeOrder({ cartToken: 's3', items, customer })
+    if (result.kind !== 'invalid') throw new Error(result.kind)
+    expect(result.fieldErrors.email).toBe('Ukázková chyba serveru: na tento e-mail nelze poslat potvrzení.')
+  })
+
+  it('throttled maps to a throttled result', async () => {
+    armScenario('throttled')
+    expect((await placeOrder({ cartToken: 's4', items, customer })).kind).toBe('throttled')
+  })
+
+  it('a cart check with sold_out removes the first item', async () => {
+    armScenario('sold_out')
+    const result = await checkCart(items)
+    expect(result.items).toEqual([])
+    expect((await getProducts()).find((p) => p.id === 1)?.stock).toBe(0)
   })
 })

@@ -1,27 +1,12 @@
 import type { z } from 'zod'
 import type { orderWire } from '../api/schemas'
+import { safeGet, safeRemove, safeSet } from './storage'
 
 export type OrderWire = z.infer<typeof orderWire>
 export type StoredOrder = { items: Record<number, number>; order: OrderWire }
 
 const ORDERS_KEY = 'shop-react-demo-orders'
 const SEQ_KEY = 'shop-react-demo-order-seq'
-
-function safeGet(key: string): string | null {
-  try {
-    return sessionStorage.getItem(key)
-  } catch {
-    return null
-  }
-}
-
-function safeSet(key: string, value: string): void {
-  try {
-    sessionStorage.setItem(key, value)
-  } catch {
-    // storage unavailable: the demo keeps working without replay or persistence
-  }
-}
 
 function readOrders(): Record<string, StoredOrder> {
   try {
@@ -55,4 +40,9 @@ export function nextOrderNumber(): string {
 
 export function lastOrderNumber(): string {
   return format(readSeq())
+}
+
+export function clearOrders(): void {
+  safeRemove(ORDERS_KEY)
+  safeRemove(SEQ_KEY)
 }
