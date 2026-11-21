@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="French press">
+<rect width="400" height="400" fill="#dde7ec"/>
+<rect x="140" y="110" width="120" height="150" rx="18" fill="#2f4858"/><rect x="170" y="80" width="60" height="34" rx="8" fill="#2f4858"/><path d="M260 140 Q310 170 260 220" stroke="#2f4858" stroke-width="16" fill="none"/>
+<text x="200" y="340" text-anchor="middle" font-family="system-ui, sans-serif" font-size="30" font-weight="600" fill="#2f4858">French press</text>
+</svg>

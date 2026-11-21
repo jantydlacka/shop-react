@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Šálek">
+<rect width="400" height="400" fill="#ebe7f4"/>
+<path d="M130 130 H270 V200 Q270 260 200 260 Q130 260 130 200 Z" fill="#7a6c9e"/><path d="M270 150 Q320 165 270 210" stroke="#7a6c9e" stroke-width="14" fill="none"/><rect x="110" y="265" width="180" height="14" rx="7" fill="#7a6c9e"/>
+<text x="200" y="340" text-anchor="middle" font-family="system-ui, sans-serif" font-size="30" font-weight="600" fill="#7a6c9e">Šálek</text>
+</svg>

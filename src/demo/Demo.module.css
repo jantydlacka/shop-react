@@ -1,0 +1,19 @@
+.banner {
+  padding: 0.5rem max(var(--gutter), calc((100% - var(--page-max)) / 2 + var(--gutter)));
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  border-bottom: 2px solid var(--ink);
+}
+
+.banner a {
+  color: inherit;
+  font-weight: 600;
+  text-underline-offset: 0.15em;
+}
+
+.banner a:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}

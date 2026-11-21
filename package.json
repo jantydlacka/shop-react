@@ -8,6 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "build:demo": "vite build --mode demo --base=/shop-react/",
+    "preview:demo": "vite preview --mode demo --base=/shop-react/",
     "check": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.node.json --noEmit && eslint . && vitest run && vite build",
     "test": "vitest run"
   },

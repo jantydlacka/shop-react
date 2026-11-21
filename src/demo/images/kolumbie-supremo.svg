@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Kolumbie">
+<rect width="400" height="400" fill="#fbeedd"/>
+<ellipse cx="200" cy="170" rx="70" ry="95" fill="#8a5a3b" transform="rotate(-25 200 170)"/><path d="M175 90 C215 140 185 200 225 250" stroke="#fbeedd" stroke-width="10" fill="none" stroke-linecap="round"/>
+<text x="200" y="340" text-anchor="middle" font-family="system-ui, sans-serif" font-size="30" font-weight="600" fill="#8a5a3b">Kolumbie</text>
+</svg>

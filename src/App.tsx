@@ -5,7 +5,7 @@ import { CartProvider } from './cart/cartStore'
 import { createQueryClient } from './queryClient'
 import { routes } from './routes'
 
-const router = createBrowserRouter(routes)
+const router = createBrowserRouter(routes, { basename: import.meta.env.BASE_URL })
 
 export default function App() {
   const [queryClient] = useState(() => createQueryClient())

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Espresso">
+<rect width="400" height="400" fill="#f4e3c9"/>
+<ellipse cx="200" cy="170" rx="70" ry="95" fill="#6b3e26" transform="rotate(-25 200 170)"/><path d="M175 90 C215 140 185 200 225 250" stroke="#f4e3c9" stroke-width="10" fill="none" stroke-linecap="round"/>
+<text x="200" y="340" text-anchor="middle" font-family="system-ui, sans-serif" font-size="30" font-weight="600" fill="#6b3e26">Espresso</text>
+</svg>
