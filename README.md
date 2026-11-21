@@ -84,7 +84,7 @@ shown field by field.
 
 **Prices are integer hellers** end to end; only the client formats them (`Intl.NumberFormat('cs-CZ')`).
 
-Fonts: Zilla Slab and Source Sans 3 (`src/assets/fonts`, latin and latin-ext subsets), licensed under the SIL Open Font License 1.1, see `src/assets/fonts/OFL.txt`.
+Fonts: Zilla Slab and Source Sans 3 (`src/assets/fonts`, latin and latin-ext subsets), licensed under the SIL Open Font License 1.1, see `src/assets/fonts/OFL-ZillaSlab.txt` and `src/assets/fonts/OFL-SourceSans3.txt`.
 
 ## Known limitations
 
