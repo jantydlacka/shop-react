@@ -55,7 +55,14 @@ export function ProductPage() {
   return (
     <article className={styles.detail}>
       <PageTitle page={product.name} />
-      <ProductImage url={product.imageUrl} alt={product.name} />
+      <div className={soldOut ? `${styles.media} ${styles.mediaSoldOut}` : styles.media}>
+        <ProductImage url={product.imageUrl} alt={product.name} />
+        {soldOut && (
+          <span className={styles.stamp} aria-hidden="true">
+            Vyprodáno
+          </span>
+        )}
+      </div>
       <div>
         <h2>{product.name}</h2>
         <p>{product.description}</p>

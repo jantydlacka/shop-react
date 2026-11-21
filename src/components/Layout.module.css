@@ -3,7 +3,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem 1.5rem;
-  padding: 1.125rem clamp(1rem, 4vw, 3rem);
+  padding: 1.125rem max(var(--gutter), calc((100% - var(--page-max)) / 2 + var(--gutter)));
 }
 
 .brand {
@@ -43,9 +43,9 @@
 }
 
 .main {
-  max-width: 64rem;
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 0.5rem clamp(1rem, 4vw, 3rem) 3rem;
+  padding: 0.5rem var(--gutter) 3rem;
 }
 
 @media (max-width: 40rem) {

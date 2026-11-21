@@ -77,6 +77,9 @@
   --ink: #2a1f17;
   --stamp: #2f5d46;
   --red: #8e2f22;
+  --muted: #6b5d52;
+  --page-max: 64rem;
+  --gutter: clamp(1rem, 4vw, 3rem);
   --font-display: 'Zilla Slab', Georgia, serif;
   --font-text: 'Source Sans 3', system-ui, sans-serif;
   --label-cut: polygon(
@@ -125,8 +128,10 @@ button {
 }
 
 button:disabled {
+  border-style: dashed;
+  border-color: var(--muted);
   background: var(--paper);
-  color: var(--ink);
+  color: var(--muted);
   cursor: not-allowed;
 }
 
@@ -140,4 +145,11 @@ textarea {
   background: var(--paper);
   color: var(--ink);
   font: inherit;
+}
+
+input:disabled {
+  border-bottom-style: dashed;
+  border-bottom-color: var(--muted);
+  color: var(--muted);
+  cursor: not-allowed;
 }
