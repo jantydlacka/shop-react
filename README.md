@@ -1,6 +1,6 @@
 # Shop React
 
-CI: `npm run check` on every push (`.github/workflows/ci.yml`).
+CI runs `npm run check` on pushes to main and on pull requests (`.github/workflows/ci.yml`).
 
 A React + TypeScript storefront for the coffee & tea shop from **laravel-shop**. It is the same
 shop with a second frontend: the catalogue, the stock, the prices, the quantity cap and the order
@@ -16,9 +16,9 @@ small; the storefront is in Czech, code, comments and docs are in English.
 |---|---|---|
 | ![Cart](docs/screenshots/cart.png) | ![Checkout](docs/screenshots/checkout-price-change.png) | ![Confirmation](docs/screenshots/confirmation.png) |
 
-The screenshots were taken in a real browser against the demo data of laravel-shop. The price
-notice in the checkout screenshot is real: the price of the product in the cart was changed on the
-server between adding it and submitting the order.
+The screenshots come from a throwaway Playwright script driving Chrome against the running API and
+the demo data of laravel-shop. The price notice in the checkout screenshot is the server's real 409
+answer; to get it, the script put a cart with an older price into `localStorage` before submitting.
 
 ## Stack
 
@@ -27,9 +27,9 @@ Vitest + Testing Library + MSW
 
 ## Running it
 
-The client needs the API, so start laravel-shop first. The API is on the `api-for-react-client`
-branch of laravel-shop – check that branch out and follow the quick start in that README
-(Docker and Sail; `./vendor/bin/sail up -d --wait`, then migrate and seed). The shop then listens on
+The client needs the API, so start laravel-shop first. The API lives in the `api-for-react-client`
+branch of laravel-shop, which is not merged or published yet – check that branch out and follow the
+quick start in that README (Docker and Sail; `./vendor/bin/sail up -d --wait`, then migrate and seed). The shop then listens on
 <http://localhost:8088>, and confirmation e-mails land in Mailpit once the queue is processed
 (`./vendor/bin/sail artisan queue:work`).
 
@@ -48,7 +48,7 @@ The dev server proxies `/api` to `http://localhost:8088`. If the API runs elsewh
 
 1. `tsc -p tsconfig.app.json --noEmit` and `tsc -p tsconfig.node.json --noEmit` – type check
 2. `eslint .`
-3. `vitest run` – component and unit tests with the API mocked by MSW (88 tests in 11 files at the time of writing)
+3. `vitest run` – component and unit tests with the API mocked by MSW
 4. `vite build`
 
 ## Architecture decisions
@@ -61,6 +61,8 @@ order (`POST /api/orders`). There is no server session, no cookie and no login.
 with the order. A retry after a timeout or a double click therefore yields one order: the server
 returns the existing order for the same token and the same items (HTTP 200 instead of 201). The same
 token with different items is refused (409 "already ordered"), and the client then renews the token.
+Because a 200 returns the order as it was first placed, the confirmation then says so and asks the
+customer to check the details in the confirmation e-mail – data edited before the retry are not applied.
 The token is renewed after an order is placed, so the next purchase is a new one.
 
 **A stale cart is corrected, not rejected silently.** If a price, availability or stock changed, the
@@ -73,8 +75,10 @@ wire format (snake_case) is mapped to client types in one place. Generating the 
 `product_id` as string and `image_url` as null – so the client validates responses with zod instead.
 
 **The form rules mirror the server for UX only.** The checkout schema repeats the server's
-`CheckoutRules` so most mistakes are caught before a request is sent, and it is deliberately looser
-where the two could disagree. The server's 422 is authoritative and is shown field by field.
+`CheckoutRules` so most mistakes are caught before a request is sent. The two can still differ at
+the edges: the client counts maximum lengths in UTF-16 units and the server in characters, so text
+full of emoji close to a limit may be judged differently. The server's 422 is authoritative and is
+shown field by field.
 
 **Prices are integer hellers** end to end; only the client formats them (`Intl.NumberFormat('cs-CZ')`).
 
@@ -86,8 +90,9 @@ where the two could disagree. The server's 422 is authoritative and is shown fie
 - **The order confirmation survives a reload only in the same tab** (`sessionStorage`). There is no
   order lookup in the API by design – its responses carry no personal data – so a new tab shows
   "we no longer see the order" and points to the confirmation e-mail.
-- **No end-to-end test suite.** The behaviour was walked through by hand in a real browser against
-  the running API (see the screenshots), but nothing re-runs that automatically.
+- **No end-to-end test suite.** The behaviour was walked through with a throwaway Playwright
+  script driving Chrome against the running API (the screenshots come from those runs); nothing
+  re-runs it automatically.
 - **Server-side limitations apply**, see "Known limitations" in the laravel-shop README: the hourly
   order limit (10 per IP) is not atomic, so a burst of parallel requests can overshoot it, and
   behind a reverse proxy `trustProxies` must be configured, otherwise the limit applies to the
