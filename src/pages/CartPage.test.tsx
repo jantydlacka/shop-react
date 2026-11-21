@@ -239,8 +239,8 @@ test('does not check the cart again when the window regains focus', async () => 
   renderWithProviders('/kosik', [line])
   await waitFor(() => expect(calls).toBe(1))
   await waitFor(() => expect(screen.getByLabelText('Množství')).toBeEnabled())
-  document.dispatchEvent(new Event('visibilitychange'))
-  window.dispatchEvent(new Event('focus'))
+  // TanStack's focus manager listens for visibilitychange on window.
+  window.dispatchEvent(new Event('visibilitychange'))
   await new Promise((r) => setTimeout(r, 50))
   expect(calls).toBe(1)
 })

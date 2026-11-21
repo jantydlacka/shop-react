@@ -32,7 +32,7 @@ export function CheckoutPage() {
   const [busy, setBusy] = useState(false)
   const [notices, setNotices] = useState<string[]>([])
   const [general, setGeneral] = useState<string[]>([])
-  const [failed, setFailed] = useState<Payload | null>(null)
+  const [failed, setFailed] = useState(false)
   // Synchronous guard: state updates are too late to stop two clicks in the same tick.
   const inFlight = useRef(false)
   // Set once the page is being left on purpose, so the empty-cart redirect does not race the navigation.
@@ -44,7 +44,7 @@ export function CheckoutPage() {
     setBusy(true)
     setNotices([])
     setGeneral([])
-    setFailed(null)
+    setFailed(false)
     let keepLocked = false
     try {
       const result = await placeOrder(payload)
@@ -88,7 +88,7 @@ export function CheckoutPage() {
       }
     } catch (error) {
       if (!(error instanceof ApiError)) throw error
-      setFailed(payload)
+      setFailed(true)
     } finally {
       if (!keepLocked) {
         inFlight.current = false
@@ -142,7 +142,7 @@ export function CheckoutPage() {
       {failed && (
         <div role="alert" className={styles.errors}>
           <p>{NETWORK_MESSAGE}</p>
-          <button type="button" disabled={busy} onClick={() => void send(failed)}>
+          <button type="button" disabled={busy} onClick={() => void handleSubmit(onValid)()}>
             Zkusit znovu
           </button>
         </div>

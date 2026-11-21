@@ -233,3 +233,69 @@ test('navigates with the order in state when storage throws', async () => {
     Storage.prototype.setItem = original
   }
 })
+
+test('retries with the current form values', async () => {
+  const bodies: { cart_token: string; customer: { phone: string } }[] = []
+  let fail = true
+  server.use(
+    http.post('*/api/orders', async ({ request }) => {
+      bodies.push((await request.json()) as (typeof bodies)[number])
+      return fail ? HttpResponse.error() : created()
+    }),
+  )
+  renderWithProviders('/pokladna', [line])
+  await fillValid()
+  await submit()
+  await screen.findByText('Spojení selhalo. Zkontrolujte připojení a zkuste to znovu.')
+  fail = false
+  const phone = screen.getByLabelText('Telefon')
+  await userEvent.clear(phone)
+  await userEvent.type(phone, '603999888')
+  await userEvent.click(screen.getByRole('button', { name: 'Zkusit znovu' }))
+  expect(await screen.findByText('Děkujeme za objednávku')).toBeInTheDocument()
+  expect(bodies).toHaveLength(2)
+  expect(bodies[1]!.customer.phone).toBe('603999888')
+  expect(bodies[1]!.cart_token).toBe(bodies[0]!.cart_token)
+})
+
+test('accepts an internationalized e-mail', async () => {
+  const bodies: { customer: { email: string } }[] = []
+  server.use(
+    http.post('*/api/orders', async ({ request }) => {
+      bodies.push((await request.json()) as (typeof bodies)[number])
+      return created()
+    }),
+  )
+  renderWithProviders('/pokladna', [line])
+  await fillValid()
+  const email = screen.getByLabelText('E-mail')
+  await userEvent.clear(email)
+  await userEvent.type(email, 'jan@příklad.cz')
+  await submit()
+  expect(await screen.findByText('Děkujeme za objednávku')).toBeInTheDocument()
+  expect(bodies[0]!.customer.email).toBe('jan@příklad.cz')
+})
+
+test('still rejects an address without a domain part', async () => {
+  let calls = 0
+  server.use(http.post('*/api/orders', () => (calls++, created())))
+  renderWithProviders('/pokladna', [line])
+  await fillValid()
+  const email = screen.getByLabelText('E-mail')
+  await userEvent.clear(email)
+  await userEvent.type(email, 'jan')
+  await submit()
+  expect(await screen.findByText('Zadejte platný e-mail.')).toBeInTheDocument()
+  expect(calls).toBe(0)
+})
+
+test('shows a server e-mail error on the field', async () => {
+  recordOrders([], () =>
+    HttpResponse.json({ message: 'x', errors: { 'customer.email': ['Zadejte platný e-mail.'] } }, { status: 422 }),
+  )
+  renderWithProviders('/pokladna', [line])
+  await fillValid()
+  await submit()
+  expect(await screen.findByText('Zadejte platný e-mail.')).toBeInTheDocument()
+  expect(screen.getByLabelText('E-mail')).toHaveAttribute('aria-invalid', 'true')
+})
