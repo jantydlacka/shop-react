@@ -2,7 +2,9 @@ import type { RouteObject } from 'react-router'
 import { Layout } from './components/Layout'
 import { CartPage } from './pages/CartPage'
 import { CatalogPage } from './pages/CatalogPage'
-import { CheckoutPage, NotFoundPage, OrderPage } from './pages/Placeholders'
+import { CheckoutPage } from './pages/CheckoutPage'
+import { ConfirmationPage } from './pages/ConfirmationPage'
+import { NotFoundPage } from './pages/NotFoundPage'
 import { ProductPage } from './pages/ProductPage'
 
 export const routes: RouteObject[] = [
@@ -14,7 +16,7 @@ export const routes: RouteObject[] = [
       { path: '/produkt/:slug', element: <ProductPage /> },
       { path: '/kosik', element: <CartPage /> },
       { path: '/pokladna', element: <CheckoutPage /> },
-      { path: '/objednavka/:number', element: <OrderPage /> },
+      { path: '/objednavka/:number', element: <ConfirmationPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

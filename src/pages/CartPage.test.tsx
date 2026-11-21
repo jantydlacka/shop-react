@@ -221,3 +221,26 @@ test('announces server messages as a status', async () => {
   const note = await screen.findByText('Cena se změnila.')
   expect(note.closest('[role="status"]')).not.toBeNull()
 })
+
+test('shows messages handed over by the checkout above the empty state', async () => {
+  renderWithProviders({ pathname: '/kosik', state: { messages: ['Produkt je vyprodán.'] } })
+  expect(await screen.findByText('Produkt je vyprodán.')).toBeInTheDocument()
+  expect(screen.getByText('Košík je prázdný')).toBeInTheDocument()
+})
+
+test('does not check the cart again when the window regains focus', async () => {
+  let calls = 0
+  server.use(
+    http.post('*/api/cart/check', () => {
+      calls++
+      return HttpResponse.json({ items: [{ product_id: 1, quantity: 2, price: 64900 }], messages: [] })
+    }),
+  )
+  renderWithProviders('/kosik', [line])
+  await waitFor(() => expect(calls).toBe(1))
+  await waitFor(() => expect(screen.getByLabelText('Množství')).toBeEnabled())
+  document.dispatchEvent(new Event('visibilitychange'))
+  window.dispatchEvent(new Event('focus'))
+  await new Promise((r) => setTimeout(r, 50))
+  expect(calls).toBe(1)
+})

@@ -188,4 +188,14 @@ describe('cart store', () => {
       unmount()
     }
   })
+
+  it('renews the token without touching items and persists it', () => {
+    const { result } = setup()
+    act(() => result.current.add(product(), 2))
+    const before = result.current.token
+    act(() => result.current.renewToken())
+    expect(result.current.token).not.toBe(before)
+    expect(result.current.items).toHaveLength(1)
+    expect(JSON.parse(localStorage.getItem(KEY)!).token).toBe(result.current.token)
+  })
 })

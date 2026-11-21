@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { checkCart } from '../api/client'
 import { useCart, type CartLine } from '../cart/cartStore'
 import { parseQuantity } from '../cart/quantity'
@@ -70,6 +70,7 @@ export function CartPage() {
     queryFn: () => checkCart(items),
     enabled: hadItems,
     staleTime: 0,
+    refetchOnWindowFocus: false,
     gcTime: 0,
     retry: false,
   })
@@ -84,7 +85,9 @@ export function CartPage() {
     if (check.data) replaceRef.current(check.data.items)
   }, [check.data])
 
-  const messages = check.data?.messages ?? []
+  const stateMessages = (useLocation().state as { messages?: unknown } | null)?.messages
+  const handedOver = Array.isArray(stateMessages) ? stateMessages.filter((m): m is string => typeof m === 'string') : []
+  const messages = [...handedOver, ...(check.data?.messages ?? [])]
   const notices =
     messages.length > 0 ? (
       <ul role="status" className={styles.notices}>

@@ -10,6 +10,7 @@ type Action =
   | { type: 'remove'; productId: number }
   | { type: 'replace'; items: CartItem[] }
   | { type: 'clear' }
+  | { type: 'renewToken' }
 
 const fresh = (items: CartLine[] = []): CartState => ({ items, token: crypto.randomUUID() })
 
@@ -86,6 +87,8 @@ function reducer(state: CartState, action: Action): CartState {
     }
     case 'clear':
       return fresh()
+    case 'renewToken':
+      return fresh(state.items)
   }
 }
 
@@ -98,6 +101,7 @@ type CartApi = {
   remove: (productId: number) => void
   replace: (items: CartItem[]) => void
   clear: () => void
+  renewToken: () => void
 }
 
 const CartContext = createContext<CartApi | null>(null)
@@ -117,6 +121,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       remove: (productId) => dispatch({ type: 'remove', productId }),
       replace: (items) => dispatch({ type: 'replace', items }),
       clear: () => dispatch({ type: 'clear' }),
+      renewToken: () => dispatch({ type: 'renewToken' }),
     }),
     [state],
   )
