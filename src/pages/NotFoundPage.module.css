@@ -1,0 +1,4 @@
+.sheet {
+  composes: sheet from './Receipt.module.css';
+  max-width: 24rem;
+}

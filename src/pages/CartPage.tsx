@@ -105,7 +105,7 @@ export function CartPage() {
 
   if (items.length === 0) {
     return (
-      <section>
+      <section className={styles.sheet}>
         <PageTitle page="Košík" />
         <h2>Košík</h2>
         {notices}
@@ -120,7 +120,7 @@ export function CartPage() {
   const total = items.reduce((sum, l) => sum + l.price * l.quantity, 0)
 
   return (
-    <section>
+    <section className={styles.sheet}>
       <PageTitle page="Košík" />
       <h2>Košík</h2>
       {notices}

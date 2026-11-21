@@ -113,7 +113,7 @@ export function CheckoutPage() {
   const total = items.reduce((sum, l) => sum + l.price * l.quantity, 0)
 
   return (
-    <section>
+    <section className={styles.sheet}>
       <PageTitle page="Pokladna" />
       <h2>Pokladna</h2>
       <h3>Souhrn objednávky</h3>
@@ -124,7 +124,7 @@ export function CheckoutPage() {
           </li>
         ))}
       </ul>
-      <p data-testid="checkout-total">
+      <p data-testid="checkout-total" className={styles.total}>
         Celkem: <strong>{formatPrice(total)}</strong>
       </p>
 

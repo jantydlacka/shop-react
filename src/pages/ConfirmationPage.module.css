@@ -1,0 +1,26 @@
+.sheet {
+  composes: sheet from './Receipt.module.css';
+}
+
+.rows {
+  composes: rows from './Receipt.module.css';
+}
+
+.total {
+  composes: total from './Receipt.module.css';
+}
+
+.notice {
+  composes: notice from './Receipt.module.css';
+}
+
+.stamp {
+  display: inline-block;
+  margin-left: 0.25rem;
+  padding: 0.125rem 0.75rem;
+  border: 3px solid var(--stamp);
+  color: var(--stamp);
+  font: 700 1.25rem/1.2 var(--font-display);
+  letter-spacing: 0.04em;
+  transform: rotate(-4deg);
+}

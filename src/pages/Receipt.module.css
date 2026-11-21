@@ -1,0 +1,64 @@
+.sheet {
+  position: relative;
+  isolation: isolate;
+  padding: 1.5rem;
+}
+
+.sheet::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--paper);
+  clip-path: var(--label-cut);
+}
+
+.sheet > h2:first-of-type {
+  margin-top: 0;
+}
+
+.rows {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.rows > li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed var(--kraft-dk);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.rows strong {
+  white-space: nowrap;
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1rem 0;
+  font: 700 1.25rem/1.2 var(--font-display);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.notice {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  list-style: none;
+}
+
+.notice p {
+  margin: 0 0 0.5rem;
+}
+
+.alert {
+  composes: notice;
+  border-left-color: var(--red);
+}

@@ -1,14 +1,23 @@
+.sheet {
+  composes: sheet from './Receipt.module.css';
+}
+
 .summary {
-  list-style: none;
-  padding: 0;
-  display: grid;
-  gap: 0.25rem;
+  composes: rows from './Receipt.module.css';
+}
+
+.total {
+  composes: total from './Receipt.module.css';
 }
 
 .form {
   display: grid;
   gap: 0.5rem;
   max-width: 32rem;
+}
+
+.form button {
+  justify-self: start;
 }
 
 .field {
@@ -20,19 +29,13 @@
 .fieldError {
   margin: 0;
   min-height: 1.2em;
-  color: #a03030;
+  color: var(--red);
 }
 
 .notices {
-  padding: 0.75rem 1rem 0.75rem 2rem;
-  border: 1px solid #e0d4a4;
-  border-radius: 6px;
-  background: #fdf9e8;
+  composes: notice from './Receipt.module.css';
 }
 
 .errors {
-  padding: 0.75rem 1rem 0.75rem 2rem;
-  border: 1px solid #e0b4b4;
-  border-radius: 6px;
-  background: #fdf3f3;
+  composes: alert from './Receipt.module.css';
 }
