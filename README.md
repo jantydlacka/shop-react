@@ -1,8 +1,7 @@
 # Shop React
 
-CI runs `npm run check` on pushes to main and on pull requests (`.github/workflows/ci.yml`).
-
-A React + TypeScript storefront for the coffee & tea shop from **laravel-shop**. It is the same
+A React + TypeScript storefront for the coffee & tea shop from
+**[laravel-shop](https://github.com/jantydlacka/laravel-shop)**. It is the same
 shop with a second frontend: the catalogue, the stock, the prices, the quantity cap and the order
 limit all live in laravel-shop and are reached over its JSON API (`/api`). This client holds the
 cart, validates what comes back and places the order. It is a portfolio project, deliberately
@@ -27,9 +26,10 @@ Vitest + Testing Library + MSW
 
 ## Running it
 
-The client needs the API, so start laravel-shop first. The API lives in the `api-for-react-client`
-branch of laravel-shop, which is not merged or published yet – check that branch out and follow the
-quick start in that README (Docker and Sail; `./vendor/bin/sail up -d --wait`, then migrate and seed). The shop then listens on
+The client needs the API, so start laravel-shop first. The API lives in the
+[`api-for-react-client`](https://github.com/jantydlacka/laravel-shop/tree/api-for-react-client) branch
+of laravel-shop and is not merged into its `main` yet – check that branch out and follow the quick
+start in its README (Docker and Sail; `./vendor/bin/sail up -d --wait`, then migrate and seed). The shop then listens on
 <http://localhost:8088>, and confirmation e-mails land in Mailpit once the queue is processed
 (`./vendor/bin/sail artisan queue:work`).
 
@@ -40,11 +40,13 @@ nvm use && npm ci && npm run dev
 ```
 
 The dev server proxies `/api` to `http://localhost:8088`. If the API runs elsewhere, set
-`VITE_API_PROXY` (for example `VITE_API_PROXY=http://localhost:8000 npm run dev`).
+`VITE_API_PROXY` (for example `VITE_API_PROXY=http://localhost:8000 npm run dev`). Sail publishes
+port 5173 as well; when it is taken, Vite picks the next free port and prints it.
 
 ## Tests and quality
 
-`npm run check` is the single gate (it is what CI runs). It runs, in order:
+`npm run check` is the single gate. CI (`.github/workflows/ci.yml`) runs it on pushes to main and
+on pull requests. It runs, in order:
 
 1. `tsc -p tsconfig.app.json --noEmit` and `tsc -p tsconfig.node.json --noEmit` – type check
 2. `eslint .`
