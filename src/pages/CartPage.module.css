@@ -8,7 +8,7 @@
   padding: 0;
 }
 
-.lines > li {
+.line {
   border-bottom: 1px dashed var(--kraft-dk);
   font-variant-numeric: lining-nums tabular-nums;
   display: grid;
@@ -22,37 +22,38 @@
   padding: 1rem 0;
 }
 
-.lines > li > :nth-child(1) {
+.image {
   grid-area: img;
 }
 
-.lines > li > :nth-child(2) {
+.info {
   grid-area: info;
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
-.lines > li > :nth-child(2) p {
+.info p {
   margin: 0.25rem 0 0;
   white-space: nowrap;
 }
 
-.lines > li strong {
+.line strong {
   white-space: nowrap;
 }
 
-.lines > li > :nth-child(4) {
+.lineTotal {
   grid-area: total;
   justify-self: end;
 }
 
-@media (min-width: 40rem) {
-  .lines > li {
+@media (min-width: 48rem) {
+  .line {
     grid-template-columns: 5rem 1fr auto auto;
     grid-template-areas: 'img info form total';
     gap: 1rem;
   }
 
-  .lines > li > :nth-child(4) {
+  .lineTotal {
     justify-self: auto;
   }
 }

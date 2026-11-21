@@ -27,8 +27,10 @@ function CartRow({ line, locked }: { line: CartLine; locked: boolean }) {
 
   return (
     <li className={styles.line}>
-      <ProductImage url={line.imageUrl} alt={line.name} />
-      <div>
+      <div className={styles.image}>
+        <ProductImage url={line.imageUrl} alt={line.name} />
+      </div>
+      <div className={styles.info}>
         <Link to={`/produkt/${line.slug}`}>{line.name}</Link>
         <p>{formatPrice(line.price)} / ks</p>
       </div>
@@ -61,7 +63,7 @@ function CartRow({ line, locked }: { line: CartLine; locked: boolean }) {
         </button>
         <p role="alert">{error ?? ''}</p>
       </form>
-      <strong>{formatPrice(line.price * line.quantity)}</strong>
+      <strong className={styles.lineTotal}>{formatPrice(line.price * line.quantity)}</strong>
     </li>
   )
 }
