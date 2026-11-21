@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { currentProducts, demoProducts, findProduct } from './catalog'
-import { lastOrderNumber, nextOrderNumber } from './orders'
+import { lastIssuedOrderNumber, nextOrderNumber } from './orders'
 import { armScenario, armedScenario, resetDemo, scenarioHooks, subscribe } from './scenarios'
 
 const NBSP = ' '
@@ -196,7 +196,7 @@ describe('resetDemo', () => {
     resetDemo()
     expect(currentProducts()).toEqual(demoProducts)
     expect(armedScenario()).toBeNull()
-    expect(lastOrderNumber()).toBe('DEMO-0000')
+    expect(lastIssuedOrderNumber()).toBeNull()
   })
 
   it('leaves the cart alone', () => {

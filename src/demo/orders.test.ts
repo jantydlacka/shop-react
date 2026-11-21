@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { lastOrderNumber, loadOrder, nextOrderNumber, saveOrder } from './orders'
+import { lastIssuedOrderNumber, loadOrder, nextOrderNumber, saveOrder } from './orders'
 
 beforeEach(() => {
   sessionStorage.clear()
@@ -14,10 +14,10 @@ describe('order numbers', () => {
   })
 
   it('reports the last issued number without incrementing', () => {
-    expect(lastOrderNumber()).toBe('DEMO-0000')
+    expect(lastIssuedOrderNumber()).toBeNull()
     nextOrderNumber()
-    expect(lastOrderNumber()).toBe('DEMO-0001')
-    expect(lastOrderNumber()).toBe('DEMO-0001')
+    expect(lastIssuedOrderNumber()).toBe('DEMO-0001')
+    expect(lastIssuedOrderNumber()).toBe('DEMO-0001')
   })
 })
 
@@ -38,7 +38,7 @@ describe('without usable sessionStorage', () => {
       throw new Error('denied')
     })
     expect(nextOrderNumber()).toBe('DEMO-0001')
-    expect(lastOrderNumber()).toBe('DEMO-0000')
+    expect(lastIssuedOrderNumber()).toBeNull()
     expect(() => saveOrder('t', { items: {}, order: { number: 'DEMO-0001', status: 'new', items: [], total: 0, vat_rate: 21, vat_total: 0 } })).not.toThrow()
     expect(loadOrder('t')).toBeUndefined()
   })

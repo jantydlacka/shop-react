@@ -43,10 +43,6 @@ export function lastIssuedOrderNumber(): string | null {
   return seq === 0 ? null : format(seq)
 }
 
-export function lastOrderNumber(): string {
-  return format(readSeq())
-}
-
 export function clearOrders(): void {
   persistent.remove(ORDERS_KEY)
   persistent.remove(SEQ_KEY)
