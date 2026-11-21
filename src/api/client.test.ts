@@ -170,9 +170,14 @@ describe('placeOrder', () => {
     expect(body.items).toEqual([{ product_id: 1, quantity: 2, price: 64900 }])
   })
 
-  test('200 (retry of an already placed order) gives kind placed', async () => {
+  test('200 (retry of an already placed order) gives kind placed marked as replayed', async () => {
     server.use(http.post('*/api/orders', () => HttpResponse.json({ data: wire.order })))
-    expect((await placeOrder(order)).kind).toBe('placed')
+    expect(await placeOrder(order)).toMatchObject({ kind: 'placed', replayed: true })
+  })
+
+  test('201 is not marked as replayed', async () => {
+    server.use(http.post('*/api/orders', () => HttpResponse.json({ data: wire.order }, { status: 201 })))
+    expect(await placeOrder(order)).toMatchObject({ kind: 'placed', replayed: false })
   })
 
   test('409 cart_changed gives kind changed with corrected items', async () => {

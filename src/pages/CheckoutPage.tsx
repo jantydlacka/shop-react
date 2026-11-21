@@ -51,11 +51,12 @@ export function CheckoutPage() {
       switch (result.kind) {
         case 'placed': {
           const key = result.order.number ?? payload.cartToken
-          saveOrder(key, result.order)
+          const order = { ...result.order, replayed: result.replayed }
+          saveOrder(key, order)
           setLeaving(true)
           keepLocked = true
           clear()
-          void navigate(`/objednavka/${encodeURIComponent(key)}`, { state: { order: result.order } })
+          void navigate(`/objednavka/${encodeURIComponent(key)}`, { state: { order } })
           break
         }
         case 'changed':

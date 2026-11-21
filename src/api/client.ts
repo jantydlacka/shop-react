@@ -37,7 +37,8 @@ export type CustomerInput = {
 }
 
 export type OrderResult =
-  | { kind: 'placed'; order: Order }
+  // replayed: the server returned an order this cart token had already placed (200, not 201)
+  | { kind: 'placed'; order: Order; replayed: boolean }
   | { kind: 'changed'; items: CartItem[]; messages: string[] }
   | { kind: 'already_ordered'; messages: string[] }
   | { kind: 'invalid'; fieldErrors: Record<string, string> }
@@ -153,7 +154,11 @@ export async function placeOrder(input: {
   switch (raw.status) {
     case 200:
     case 201:
-      return { kind: 'placed', order: camelize(parse(dataEnvelope(orderWire), raw).data) }
+      return {
+        kind: 'placed',
+        order: camelize(parse(dataEnvelope(orderWire), raw).data),
+        replayed: raw.status === 200,
+      }
     case 409: {
       const code = (raw.body as { code?: unknown } | null)?.code
       if (code === 'cart_changed') {

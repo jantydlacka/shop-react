@@ -34,3 +34,13 @@ test('treats garbage in storage as missing', async () => {
   renderWithProviders('/objednavka/bad')
   expect(await screen.findByText(/Objednávku tu už nevidíme/)).toBeInTheDocument()
 })
+
+test('keeps the replay notice after reload', async () => {
+  sessionStorage.setItem('shop-react:order:2026-0007', JSON.stringify({ ...order, replayed: true }))
+  renderWithProviders('/objednavka/2026-0007')
+  expect(
+    await screen.findByText(
+      'Tuto objednávku jsme přijali už při dřívějším odeslání. Platí údaje z něj – zkontrolujte je v potvrzovacím e-mailu.',
+    ),
+  ).toBeInTheDocument()
+})

@@ -16,11 +16,14 @@ const orderSchema = z.object({
   total: z.number().int(),
   vatRate: z.number().int(),
   vatTotal: z.number().int(),
+  replayed: z.boolean().optional(),
 })
+
+export type StoredOrder = Order & { replayed?: boolean }
 
 const storageKey = (key: string) => `shop-react:order:${key}`
 
-export function saveOrder(key: string, order: Order): boolean {
+export function saveOrder(key: string, order: StoredOrder): boolean {
   try {
     sessionStorage.setItem(storageKey(key), JSON.stringify(order))
     return true
@@ -29,12 +32,12 @@ export function saveOrder(key: string, order: Order): boolean {
   }
 }
 
-export function parseOrder(value: unknown): Order | null {
+export function parseOrder(value: unknown): StoredOrder | null {
   const result = orderSchema.safeParse(value)
-  return result.success ? (result.data as Order) : null
+  return result.success ? (result.data as StoredOrder) : null
 }
 
-export function loadOrder(key: string): Order | null {
+export function loadOrder(key: string): StoredOrder | null {
   try {
     const raw = sessionStorage.getItem(storageKey(key))
     return raw === null ? null : parseOrder(JSON.parse(raw))

@@ -2,6 +2,9 @@ import { Link, useLocation, useParams } from 'react-router'
 import { loadOrder, parseOrder } from '../checkout/orderStorage'
 import { formatPrice } from '../format'
 
+const REPLAYED_NOTICE =
+  'Tuto objednávku jsme přijali už při dřívějším odeslání. Platí údaje z něj – zkontrolujte je v potvrzovacím e-mailu.'
+
 export function ConfirmationPage() {
   const { number = '' } = useParams()
   const location = useLocation()
@@ -22,6 +25,9 @@ export function ConfirmationPage() {
     <section>
       <h2>Děkujeme za objednávku</h2>
       {order.number && <p>Číslo objednávky: <strong>{order.number}</strong></p>}
+      {order.replayed && (
+        <p role="status">{REPLAYED_NOTICE}</p>
+      )}
       <ul>
         {order.items.map((l, i) => (
           <li key={i}>

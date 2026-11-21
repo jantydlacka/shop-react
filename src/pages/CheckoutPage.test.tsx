@@ -45,6 +45,9 @@ const recordOrders = (bodies: { cart_token: string }[], reply: () => Response | 
 
 const created = () => HttpResponse.json({ data: wire.order }, { status: 201 })
 
+const REPLAYED =
+  'Tuto objednávku jsme přijali už při dřívějším odeslání. Platí údaje z něj – zkontrolujte je v potvrzovacím e-mailu.'
+
 const ALREADY_ORDERED =
   'Z tohoto košíku už byla odeslána objednávka č. 2026000001. Košík jsme ponechali – zkontrolujte ho a odešlete objednávku znovu, vznikne nová.'
 
@@ -301,4 +304,31 @@ test('shows a server e-mail error on the field', async () => {
   await submit()
   expect(await screen.findByText('Zadejte platný e-mail.')).toBeInTheDocument()
   expect(screen.getByLabelText('E-mail')).toHaveAttribute('aria-invalid', 'true')
+})
+
+test('says that the earlier data apply when a retry returns an already placed order', async () => {
+  let fail = true
+  server.use(
+    http.post('*/api/orders', () => (fail ? HttpResponse.error() : HttpResponse.json({ data: wire.order }))),
+  )
+  renderWithProviders('/pokladna', [line])
+  await fillValid()
+  await submit()
+  await screen.findByText('Spojení selhalo. Zkontrolujte připojení a zkuste to znovu.')
+  fail = false
+  const phone = screen.getByLabelText('Telefon')
+  await userEvent.clear(phone)
+  await userEvent.type(phone, '603999888')
+  await userEvent.click(screen.getByRole('button', { name: 'Zkusit znovu' }))
+  expect(await screen.findByText('Děkujeme za objednávku')).toBeInTheDocument()
+  expect(screen.getByText(REPLAYED)).toBeInTheDocument()
+  expect(JSON.parse(sessionStorage.getItem('shop-react:order:2026-0001')!).replayed).toBe(true)
+})
+
+test('does not show the replay notice for a new order', async () => {
+  renderWithProviders('/pokladna', [line])
+  await fillValid()
+  await submit()
+  expect(await screen.findByText('Děkujeme za objednávku')).toBeInTheDocument()
+  expect(screen.queryByText(REPLAYED)).not.toBeInTheDocument()
 })
