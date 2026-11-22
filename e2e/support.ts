@@ -1,4 +1,5 @@
-import { expect, type Page } from '@playwright/test'
+import AxeBuilder from '@axe-core/playwright'
+import { expect, test, type Page } from '@playwright/test'
 
 export async function openCatalogue(page: Page): Promise<void> {
   await page.goto('./')
@@ -31,4 +32,20 @@ export async function placeOrder(page: Page): Promise<string> {
   const number = new URL(page.url()).pathname.split('/').pop()
   if (!number) throw new Error(`No order number in ${page.url()}`)
   return number
+}
+
+export async function expectNoSeriousViolations(page: Page): Promise<void> {
+  const { violations } = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze()
+
+  for (const v of violations) {
+    test.info().annotations.push({ type: `axe ${v.impact}`, description: `${v.id}: ${v.nodes[0]?.target.join(' ')}` })
+  }
+
+  const blocking = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
+  const summary = blocking
+    .map((v) => `${v.id} (${v.impact}): ${v.nodes[0]?.target.join(' ')}`)
+    .join('\n')
+  expect(blocking, `Serious accessibility violations:\n${summary}`).toEqual([])
 }
