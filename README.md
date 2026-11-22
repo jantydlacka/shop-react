@@ -9,7 +9,7 @@ small; the storefront is in Czech, code, comments and docs are in English.
 
 **[Try the demo](https://jantydlacka.github.io/shop-react/)** – it runs without a server: the
 responses of the API are simulated in the browser by MSW, with the catalogue of the
-[laravel-shop](https://github.com/jantydlacka/laravel-shop/tree/api-for-react-client) demo data.
+[laravel-shop](https://github.com/jantydlacka/laravel-shop) demo data.
 A panel at the top arms an edge case; each one fires once, at the next cart check or order (price change, sold out, network
 failure, an already ordered cart, a validation error, the order limit). The real API is in
 laravel-shop; the screenshots below come from it.
@@ -33,10 +33,8 @@ Vitest + Testing Library + MSW
 
 ## Running it
 
-The client needs the API, so start laravel-shop first. The API lives in the
-[`api-for-react-client`](https://github.com/jantydlacka/laravel-shop/tree/api-for-react-client) branch
-of laravel-shop and is not merged into its `main` yet – check that branch out and follow the quick
-start in its README (Docker and Sail; `./vendor/bin/sail up -d --wait`, then migrate and seed). The shop then listens on
+The client needs the API, so start [laravel-shop](https://github.com/jantydlacka/laravel-shop) first
+and follow the quick start in its README (Docker and Sail; `./vendor/bin/sail up -d --wait`, then migrate and seed). The shop then listens on
 <http://localhost:8088>, and confirmation e-mails land in Mailpit once the queue is processed
 (`./vendor/bin/sail artisan queue:work`).
 

@@ -14,7 +14,7 @@ describe('DemoBanner', () => {
     render(<DemoBanner />)
     expect(screen.getByRole('link', { name: 'Skutečné API je v projektu laravel-shop' })).toHaveAttribute(
       'href',
-      'https://github.com/jantydlacka/laravel-shop/tree/api-for-react-client',
+      'https://github.com/jantydlacka/laravel-shop',
     )
   })
 })
