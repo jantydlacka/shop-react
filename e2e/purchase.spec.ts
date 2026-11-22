@@ -1,9 +1,14 @@
 import { expect, test } from '@playwright/test'
-import { addToCart, fillCheckout, openCatalogue, placeOrder } from './support.ts'
+import { addToCart, fillCheckout, openCatalogue, placeOrder, productLinks } from './support.ts'
 
 test('first visit renders the catalogue', async ({ page }) => {
   await openCatalogue(page)
-  await expect(page.locator('a[href*="/produkt/"]')).toHaveCount(11)
+  await expect(productLinks(page)).toHaveCount(12)
+  await page.getByRole('link', { name: 'Další' }).click()
+  await expect(page).toHaveURL(/strana=2$/)
+  await expect(productLinks(page)).toHaveCount(2)
+  await page.getByRole('link', { name: 'Předchozí' }).click()
+  await expect(productLinks(page)).toHaveCount(12)
 
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
   await expect

@@ -3,15 +3,19 @@ import { expect, test, type Page } from '@playwright/test'
 
 export async function openCatalogue(page: Page): Promise<void> {
   await page.goto('./')
-  await expect(page.getByText('Espresso blend 1 kg')).toBeVisible()
+  await expectCatalogue(page)
 }
 
+export async function expectCatalogue(page: Page): Promise<void> {
+  await expect(page.getByRole('searchbox', { name: 'Hledat' })).toBeVisible()
+  await expect(productLinks(page).first()).toBeVisible()
+}
+
+export const productLinks = (page: Page) => page.locator('a[href*="/produkt/"]')
+
 export async function addToCart(page: Page, productSlug: string, quantity = 1): Promise<void> {
-  if (!page.url().endsWith(`/produkt/${productSlug}`)) {
-    const link = page.locator(`a[href$="/produkt/${productSlug}"]`)
-    if (await link.isVisible()) await link.click()
-    else await page.goto(`produkt/${productSlug}`)
-  }
+  // Direct URL: with 12 products per page the product may be on page 2.
+  if (!page.url().endsWith(`/produkt/${productSlug}`)) await page.goto(`produkt/${productSlug}`)
   await page.getByLabel('Množství').fill(String(quantity))
   await page.getByRole('button', { name: 'Přidat do košíku' }).click()
   await expect(page.getByText('Přidáno do košíku')).toBeVisible()
