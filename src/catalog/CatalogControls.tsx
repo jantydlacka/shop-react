@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { useLocation, useNavigationType, useSearchParams } from 'react-router'
-import { toSearchParams, type CatalogQuery, type Sort } from './query'
+import { isSort, MAX_QUERY_LENGTH, toSearchParams, type CatalogQuery, type Sort } from './query'
 import styles from './CatalogControls.module.css'
 
 const SEARCH_DELAY_MS = 300
-const MAX_QUERY_LENGTH = 100
 
 const sortOptions: { value: Sort; label: string }[] = [
   { value: 'newest', label: 'Nejnovější' },
@@ -12,8 +11,6 @@ const sortOptions: { value: Sort; label: string }[] = [
   { value: 'price_asc', label: 'Cena vzestupně' },
   { value: 'price_desc', label: 'Cena sestupně' },
 ]
-
-const isSort = (value: string): value is Sort => sortOptions.some((option) => option.value === value)
 
 export function CatalogControls({ query }: { query: CatalogQuery }) {
   const [, setSearchParams] = useSearchParams()

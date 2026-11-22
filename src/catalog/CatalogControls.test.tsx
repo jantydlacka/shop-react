@@ -167,6 +167,16 @@ test('a sort change within 300 ms of typing keeps the typed text', async () => {
   expect(searchBox()).toHaveValue('caj')
 })
 
+test('an in-stock change within 300 ms of typing keeps the typed text', async () => {
+  const user = setup()
+  const { router } = renderWithProviders('/')
+  await user.type(await screen.findByRole('searchbox', { name: 'Hledat' }), 'caj')
+  await user.click(screen.getByRole('checkbox', { name: 'Jen skladem' }))
+  await act(() => vi.advanceTimersByTimeAsync(1000))
+  expect(search(router)).toBe('?hledat=caj&skladem=1')
+  expect(searchBox()).toHaveValue('caj')
+})
+
 test('whitespace-only text leaves hledat out of the URL and stays as typed in the field', async () => {
   const user = setup()
   const { router } = renderWithProviders('/')

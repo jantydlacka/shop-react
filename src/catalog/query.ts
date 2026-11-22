@@ -11,10 +11,13 @@ const sortToUrl: Record<Sort, string> = {
   price_desc: 'cena-sestupne',
 }
 
-const sorts = Object.keys(sortToUrl) as Sort[]
+export const sorts = Object.keys(sortToUrl) as Sort[]
+export const isSort = (value: string): value is Sort => sorts.some((sort) => sort === value)
 
-// The API rejects pages above this, so a hand-edited URL beyond it falls back to page 1.
-const MAX_PAGE = 10000
+// The API answers 422 above these, so a hand-edited URL beyond them falls back to the default.
+export const MAX_QUERY_LENGTH = 100
+export const MAX_PAGE = 10000
+
 
 function parsePage(value: string | null): number {
   if (value === null || !/^[1-9]\d*$/.test(value)) return defaultCatalogQuery.page
@@ -22,10 +25,15 @@ function parsePage(value: string | null): number {
   return page <= MAX_PAGE ? page : defaultCatalogQuery.page
 }
 
+function parseText(value: string | null): string {
+  const text = value?.trim() ?? ''
+  return [...text].length <= MAX_QUERY_LENGTH ? text : defaultCatalogQuery.q
+}
+
 export function parseCatalogQuery(params: URLSearchParams): CatalogQuery {
   const razeni = params.get('razeni')
   return {
-    q: params.get('hledat') ?? defaultCatalogQuery.q,
+    q: parseText(params.get('hledat')),
     sort: sorts.find((sort) => sortToUrl[sort] === razeni) ?? defaultCatalogQuery.sort,
     inStock: params.get('skladem') === '1',
     page: parsePage(params.get('strana')),

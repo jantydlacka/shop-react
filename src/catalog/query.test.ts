@@ -57,7 +57,18 @@ describe('parseCatalogQuery', () => {
     })
   })
 
-  it('keeps q as typed, without trimming', () => {
-    expect(parse('hledat=%20caj%20').q).toBe(' caj ')
+  it('trims q', () => {
+    expect(parse('hledat=%20caj%20').q).toBe('caj')
+  })
+
+  it('keeps q of 100 characters, also padded with spaces', () => {
+    expect(parse(`hledat=${'a'.repeat(100)}`).q).toBe('a'.repeat(100))
+    expect(parse(`hledat=%20${'a'.repeat(100)}%20`).q).toBe('a'.repeat(100))
+  })
+
+  it('drops q of 101 characters, counted in code points', () => {
+    expect(parse(`hledat=${'a'.repeat(101)}`).q).toBe('')
+    expect(parse(`hledat=${encodeURIComponent('😀'.repeat(101))}`).q).toBe('')
+    expect(parse(`hledat=${encodeURIComponent('😀'.repeat(100))}`).q).toBe('😀'.repeat(100))
   })
 })

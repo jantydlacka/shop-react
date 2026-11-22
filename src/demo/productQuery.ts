@@ -16,7 +16,8 @@ type Page = {
   }
 }
 
-// The database matches with an accent- and case-insensitive collation (utf8mb4_unicode_ci); this is the same rule.
+// Approximates the accent- and case-insensitive collation of the database (utf8mb4_unicode_ci), which also folds
+// things NFD does not (ß = ss, for example); it matches the collation on the measured cases.
 const fold = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
 
 type Param = { kind: 'absent' } | { kind: 'array' } | { kind: 'value'; value: string }
@@ -39,7 +40,7 @@ function parseQuery(params: URLSearchParams) {
   const rawQ = readParam(params, 'q')
   if (rawQ.kind === 'array') fail('q', 'The q field must be a string.')
   else if (rawQ.kind === 'value') {
-    q = rawQ.value.trim()
+    q = rawQ.value
     if ([...q].length > MAX_QUERY_LENGTH) fail('q', `The q field must not be greater than ${MAX_QUERY_LENGTH} characters.`)
   }
 
@@ -100,7 +101,16 @@ export function queryProducts(products: ProductWire[], params: URLSearchParams):
   const lastPage = Math.max(1, Math.ceil(total / PER_PAGE))
   const offset = (parsed.page - 1) * PER_PAGE
   const data = matching.slice(offset, offset + PER_PAGE)
-  const link = (page: number) => `/api/products?page=${page}`
+  // Same appended parameters as the API's pagination links, in the same order.
+  const link = (page: number) => {
+    const appended = new URLSearchParams()
+    if (parsed.category !== null) appended.set('category', parsed.category)
+    if (parsed.q !== '') appended.set('q', parsed.q)
+    if (parsed.sort !== 'newest') appended.set('sort', parsed.sort)
+    if (parsed.inStock) appended.set('in_stock', '1')
+    appended.set('page', String(page))
+    return `/api/products?${appended}`
+  }
 
   return {
     status: 200,

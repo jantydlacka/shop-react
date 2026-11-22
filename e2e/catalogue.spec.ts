@@ -102,6 +102,14 @@ test('hand-edited URL values fall back to the defaults', async ({ page }) => {
   await expect(page.getByRole('combobox', { name: 'Řazení' })).toHaveValue('newest')
 })
 
+test('an over-long search in the URL is ignored instead of reaching the API', async ({ page }) => {
+  await page.goto(`?hledat=${'a'.repeat(101)}`)
+  await expectCatalogue(page)
+  await expect(productLinks(page)).toHaveCount(12)
+  await expect(searchBox(page)).toHaveValue('')
+  await expect(page.getByText('Nepodařilo se načíst data.')).toHaveCount(0)
+})
+
 test('a category in the header keeps the search', async ({ page }) => {
   await page.goto('?hledat=caj')
   await expectCatalogue(page)

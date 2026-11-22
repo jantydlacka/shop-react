@@ -162,6 +162,17 @@ describe('pagination', () => {
   it('has links', () => {
     expect(Object.keys(ok('').links).sort()).toEqual(['first', 'last', 'next', 'prev'])
   })
+
+  it('appends category, q, non-default sort, in_stock and then page, in that order', () => {
+    const links = ok('category=kava&q=%20a%20&sort=name&in_stock=1&page=2', thirteen).links
+    expect(links.first).toBe('/api/products?category=kava&q=a&sort=name&in_stock=1&page=1')
+    expect(links.prev).toBe(links.first)
+    expect(links.last).toBe('/api/products?category=kava&q=a&sort=name&in_stock=1&page=1')
+  })
+
+  it('leaves default parameters out of the links', () => {
+    expect(ok('sort=newest&in_stock=0', thirteen).links.next).toBe('/api/products?page=2')
+  })
 })
 
 describe('in_stock', () => {
