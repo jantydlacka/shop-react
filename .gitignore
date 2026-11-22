@@ -30,3 +30,4 @@ coverage
 !.env.example
 /test-results/
 /playwright-report/
+/.lighthouseci/
