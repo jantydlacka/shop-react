@@ -28,3 +28,6 @@ dist-ssr
 coverage
 .env*
 !.env.example
+/test-results/
+/playwright-report/
+/.lighthouseci/

@@ -1,5 +1,7 @@
 # Shop React
 
+[![CI](https://github.com/jantydlacka/shop-react/actions/workflows/ci.yml/badge.svg)](https://github.com/jantydlacka/shop-react/actions/workflows/ci.yml)
+
 A React + TypeScript storefront for the coffee & tea shop from
 **[laravel-shop](https://github.com/jantydlacka/laravel-shop)**. It is the same
 shop with a second frontend: the catalogue, the stock, the prices, the quantity cap and the order
@@ -69,6 +71,31 @@ on pull requests. It runs, in order:
 4. `vite build`
 5. `scripts/check-no-demo.sh` – fails when `dist/` contains the demo
 
+### End-to-end tests and accessibility
+
+`npm run e2e` runs Playwright against the demo build served by `vite preview` under `/shop-react/`
+(it builds the demo first), in a mobile (375 px) and a desktop (1280 px) project, with Google
+Chrome (`channel: 'chrome'`, no browser download). The specs cover the first visit, a purchase
+that ends on order `DEMO-0001`, a deep link and a reload, the price-change and network-failure
+scenarios. Every page of the purchase flow (catalogue, product, cart, checkout, confirmation and the expanded demo panel) is also scanned with axe
+(`@axe-core/playwright`, WCAG 2.0/2.1 A and AA); a serious or critical violation fails the test.
+The `e2e` job blocks the deploy in `pages.yml`; `npm run check` stays free of a browser.
+
+### Lighthouse
+
+Lighthouse CI (`lighthouserc.json`) audits the catalogue and the product page in CI against the
+demo build. After each deploy only the catalogue of the published demo is audited
+(`lighthouserc.live.json`), because a deep link on GitHub Pages answers HTTP 404 and Lighthouse
+refuses such a page. Neither job blocks the deploy. Measured locally on 2026-11-22 with Lighthouse 12.6.1 and Chrome
+157.0.8103.38 (headless), against `vite preview`, 3 runs per page and preset:
+
+| Category | Mobile | Desktop |
+|---|---|---|
+| Accessibility | 100 | 100 |
+| Best practices | 100 | 100 |
+
+CI enforces the minimum in `lighthouserc.json`, with the mobile preset. Performance is not asserted yet.
+
 ## Architecture decisions
 
 **The cart lives in the client, the API is stateless.** The cart is kept in `localStorage`; the
@@ -110,9 +137,8 @@ Fonts: Zilla Slab and Source Sans 3 (`src/assets/fonts`, latin and latin-ext sub
 - **The order confirmation survives a reload only in the same tab** (`sessionStorage`). There is no
   order lookup in the API by design – its responses carry no personal data – so a new tab shows
   "we no longer see the order" and points to the confirmation e-mail.
-- **No end-to-end test suite.** The behaviour was walked through with a throwaway Playwright
-  script driving Chrome against the running API (the screenshots come from those runs); nothing
-  re-runs it automatically.
+- **The end-to-end tests run against the demo (MSW), not against laravel-shop.** The screenshots
+  above come from a throwaway script against the real API; nothing re-runs that automatically.
 - **Server-side limitations apply**, see "Known limitations" in the laravel-shop README: the hourly
   order limit (10 per IP) is not atomic, so a burst of parallel requests can overshoot it, and
   behind a reverse proxy `trustProxies` must be configured, otherwise the limit applies to the

@@ -1,8 +1,8 @@
-/// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react'
 import { copyFileSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
+import { configDefaults } from 'vitest/config'
 
 // Demo build: ships the MSW worker script and a 404.html copy of index.html,
 // so deep links on GitHub Pages load the app.
@@ -44,6 +44,7 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       setupFiles: ['src/test/setup.ts'],
       globals: false,
+      exclude: [...configDefaults.exclude, 'e2e/**'],
     },
   }
 })
