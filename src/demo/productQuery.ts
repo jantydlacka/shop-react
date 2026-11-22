@@ -21,12 +21,11 @@ const fold = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').toLo
 
 type Param = { kind: 'absent' } | { kind: 'array' } | { kind: 'value'; value: string }
 
-// Laravel sees `x[]=1` and a repeated `x=1&x=2` as an array; empty strings arrive as null.
+// Measured on the API: `x[]=1` is an array (422); a repeated `x=1&x=2` uses the last value;
+// every value is trimmed and an empty result counts as absent.
 function readParam(params: URLSearchParams, name: string): Param {
-  const arrayKey = [...params.keys()].some((key) => key.startsWith(`${name}[`))
-  const values = params.getAll(name)
-  if (arrayKey || values.length > 1) return { kind: 'array' }
-  const value = values[0]
+  if ([...params.keys()].some((key) => key.startsWith(`${name}[`))) return { kind: 'array' }
+  const value = params.getAll(name).at(-1)?.trim()
   return value === undefined || value === '' ? { kind: 'absent' } : { kind: 'value', value }
 }
 
@@ -63,7 +62,7 @@ function parseQuery(params: URLSearchParams) {
   const rawPage = readParam(params, 'page')
   if (rawPage.kind === 'array') fail('page', 'The page field must be an integer.')
   else if (rawPage.kind === 'value') {
-    if (!/^[1-9]\d*$/.test(rawPage.value) || Number(rawPage.value) > MAX_PAGE) {
+    if (!/^\+?[1-9]\d*$/.test(rawPage.value) || Number(rawPage.value) > MAX_PAGE) {
       fail('page', `The page field must be an integer between 1 and ${MAX_PAGE}.`)
     } else page = Number(rawPage.value)
   }

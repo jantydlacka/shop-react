@@ -193,11 +193,65 @@ describe('category', () => {
   })
 })
 
+describe('measured edge cases of the API', () => {
+  it('uses the last value of a repeated scalar', () => {
+    expect(ids('sort=name&sort=price_asc')).toEqual(ids('sort=price_asc'))
+    expect(ids('sort=price_asc&sort=name')).toEqual(ids('sort=name'))
+  })
+
+  it.each(['page=%201', 'page=+1', 'page=%2B1', 'sort=%20', 'sort=%20name', 'in_stock=%20', 'category=%20', 'page=', 'sort=', 'in_stock='])(
+    'accepts %s',
+    (search) => {
+      expect(run(search).status).toBe(200)
+    },
+  )
+
+  it('trims the values it reads', () => {
+    expect(ids('sort=%20name')).toEqual(ids('sort=name'))
+    expect(ids('page=%202', demoProducts)).toEqual(ids('page=2'))
+    expect(ok('page=%2B1').meta.current_page).toBe(1)
+    expect(ok('in_stock=%201').meta.total).toBe(ok('in_stock=1').meta.total)
+  })
+
+  it('treats empty page, sort and in_stock as absent', () => {
+    expect(ok('page=&sort=&in_stock=')).toEqual(ok(''))
+  })
+
+  it('reports an invalid parameter before an unknown category is looked at', () => {
+    expect(run('category=neexistuje&page=0').status).toBe(422)
+  })
+})
+
+describe('links and meta positions', () => {
+  it('has prev/next for page 1 of 2', () => {
+    const { links, meta } = ok('')
+    expect(links.first).toContain('page=1')
+    expect(links.last).toContain('page=2')
+    expect(links.prev).toBeNull()
+    expect(links.next).toContain('page=2')
+    expect(meta).toMatchObject({ from: 1, to: 12 })
+  })
+
+  it('has prev/next for page 2 of 2', () => {
+    const { links, meta } = ok('page=2')
+    expect(links.prev).toContain('page=1')
+    expect(links.next).toBeNull()
+    expect(meta).toMatchObject({ from: 13, to: 14 })
+  })
+
+  it('has null from/to for an empty page', () => {
+    expect(ok('page=9').meta).toMatchObject({ from: null, to: null })
+  })
+})
+
 describe('422 with the keys Laravel uses', () => {
   it.each([
     ['sort=xyz', ['sort']],
     ['sort[]=name', ['sort']],
-    ['sort=name&sort=price_asc', ['sort']],
+    ['sort=name&sort=xyz', ['sort']],
+    ['in_stock=1&in_stock=abc', ['in_stock']],
+    ['page=007', ['page']],
+    ['page=1.0', ['page']],
     ['in_stock=true', ['in_stock']],
     ['in_stock=false', ['in_stock']],
     ['in_stock=abc', ['in_stock']],
