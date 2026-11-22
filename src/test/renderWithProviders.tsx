@@ -12,7 +12,7 @@ export function renderWithProviders(path: string | { pathname: string; state: un
   if (seed.length > 0) localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, items: seed, token: 'seed-token' }))
   const queryClient = createQueryClient(false)
   const router = createMemoryRouter(routes, { initialEntries: [path] })
-  return render(
+  const result = render(
     <StrictMode>
     <QueryClientProvider client={queryClient}>
       <CartProvider>
@@ -21,4 +21,5 @@ export function renderWithProviders(path: string | { pathname: string; state: un
     </QueryClientProvider>
     </StrictMode>,
   )
+  return { ...result, router }
 }
