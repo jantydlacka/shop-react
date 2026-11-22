@@ -26,7 +26,7 @@ test('purchase ends on DEMO-0001', async ({ page }) => {
 
   expect(number).toBe('DEMO-0001')
   await expect(page).toHaveURL(/\/objednavka\/DEMO-0001$/)
-  await expect(page.getByTestId('order-total')).toHaveText(/Celkem:\s*1\s298,00\s*Kč/)
+  await expect(page.getByText(/Celkem:\s*1\s298,00\s*Kč/)).toBeVisible()
   await expect(page.getByText(/Z toho DPH 21 %:\s*225,27\s*Kč/)).toBeVisible()
 })
 
@@ -67,6 +67,7 @@ test('price change scenario', async ({ page }) => {
 
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Košík' })).toBeVisible()
+  await expect(page.getByText(/699,00\s+Kč \/ ks/)).toBeVisible()
   await expect(notice).toHaveCount(0)
 })
 
