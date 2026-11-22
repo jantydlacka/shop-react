@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Darjeeling">
+<rect width="400" height="400" fill="#f4e9dc"/>
+<path d="M200 70 C290 110 290 230 200 270 C110 230 110 110 200 70 Z" fill="#8a4b2a"/><path d="M200 85 L200 260" stroke="#f4e9dc" stroke-width="8" stroke-linecap="round"/>
+<text x="200" y="340" text-anchor="middle" font-family="system-ui, sans-serif" font-size="30" font-weight="600" fill="#8a4b2a">Darjeeling</text>
+</svg>

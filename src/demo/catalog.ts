@@ -35,6 +35,9 @@ const seed: [number, string, string, string, number, number, string][] = [
   [10, 'prislusenstvi', 'french-press', 'French press 1 l', 74950, 5, 'Skleněná konvice s nerezovým sítkem.'],
   [11, 'prislusenstvi', 'rucni-mlynek', 'Ruční mlýnek s keramickými kameny', 129900, 3, 'Nastavitelná hrubost mletí od espressa po french press.'],
   [12, 'prislusenstvi', 'porcelanovy-salek', 'Porcelánový šálek 150 ml', 24900, 50, 'Šálek s podšálkem, vhodný do myčky.'],
+  [13, 'kava', 'brazilie-santos', 'Brazílie Santos 250 g', 25900, 14, 'Jednodruhová arabika s oříškovou vůní a nízkou kyselostí.'],
+  [14, 'caj', 'darjeeling', 'Darjeeling 100 g', 17900, 0, 'Černý horský Darjeeling s muškátovou vůní.'],
+  [15, 'prislusenstvi', 'barista-tamper', 'Barista tamper 58 mm', 34900, 10, 'Nerezový tamper s dřevěnou rukojetí pro sítka o průměru 58 mm.'],
 ]
 
 const MAX_QUANTITY = 99

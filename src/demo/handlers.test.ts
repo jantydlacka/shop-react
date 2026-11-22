@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { ApiError, checkCart, getCategories, getProduct, getProducts, placeOrder } from '../api/client'
+import { defaultCatalogQuery } from '../catalog/query'
 import { server as globalServer } from '../test/handlers'
+import { setOverride } from './catalog'
 import { createDemoHandlers } from './handlers'
 import { armScenario, resetDemo, scenarioHooks } from './scenarios'
 
 const customer = { name: 'Jana', email: 'jana@example.com', phone: '123456789', street: 'Ulice 1', city: 'Praha', zip: '11000' }
+const api = (path: string) => new URL(path, globalThis.location.href)
 const NBSP = ' '
 
 beforeEach(() => {
@@ -19,15 +22,55 @@ describe('catalog', () => {
   })
 
   it('filters products by category', async () => {
-    const tea = await getProducts('caj')
-    expect(tea.length).toBeGreaterThan(0)
-    expect(tea.every((p) => p.category.slug === 'caj')).toBe(true)
+    const tea = await getProducts({ ...defaultCatalogQuery, category: 'caj' })
+    expect(tea.products.length).toBeGreaterThan(0)
+    expect(tea.products.every((p) => p.category.slug === 'caj')).toBe(true)
   })
 
-  it('returns the 11 available products, the decaf one sold out', async () => {
-    const products = await getProducts()
-    expect(products).toHaveLength(11)
-    expect(products.find((p) => p.slug === 'bezkofeinova-smes')?.stock).toBe(0)
+  it('returns the first page of the 14 available products with the page meta', async () => {
+    const page = await getProducts()
+    expect(page).toMatchObject({ currentPage: 1, lastPage: 2, total: 14 })
+    expect(page.products).toHaveLength(12)
+    expect(page.products.map((p) => p.slug)).not.toContain('matcha')
+  })
+
+  it('returns the full tail of the catalogue on page 2, the decaf one sold out', async () => {
+    const page = await getProducts({ ...defaultCatalogQuery, page: 2 })
+    expect(page.products).toHaveLength(2)
+    const all = [...(await getProducts()).products, ...page.products]
+    expect(all.find((p) => p.slug === 'bezkofeinova-smes')?.stock).toBe(0)
+  })
+
+  it('serves the response with data, links and meta', async () => {
+    const body = (await (await fetch(api('/api/products?q=caj'))).json()) as Record<string, unknown>
+    expect(Object.keys(body).sort()).toEqual(['data', 'links', 'meta'])
+  })
+
+  it('answers an invalid query with 422 and the field errors', async () => {
+    const response = await fetch(api('/api/products?sort=xyz&page=0'))
+    expect(response.status).toBe(422)
+    const body = (await response.json()) as { message: string; errors: Record<string, string[]> }
+    expect(Object.keys(body.errors).sort()).toEqual(['page', 'sort'])
+  })
+
+  it('answers an unknown category with 404', async () => {
+    expect((await fetch(api('/api/products?category=neexistuje'))).status).toBe(404)
+  })
+
+  it('sees scenario overrides: a sold-out product leaves in_stock=1', async () => {
+    const before = await getProducts({ ...defaultCatalogQuery, q: 'espresso', inStock: true })
+    expect(before.products.map((p) => p.slug)).toEqual(['espresso-blend'])
+    setOverride(1, { stock: 0 })
+    const after = await getProducts({ ...defaultCatalogQuery, q: 'espresso', inStock: true })
+    expect(after.products).toEqual([])
+    expect((await getProducts({ ...defaultCatalogQuery, q: 'espresso' })).products[0]?.stock).toBe(0)
+  })
+
+  it('sees scenario overrides: a price change reorders price_asc', async () => {
+    const first = async () => (await getProducts({ ...defaultCatalogQuery, sort: 'price_asc' })).products[0]?.slug
+    expect(await first()).toBe('rooibos-vanilka')
+    setOverride(11, { price: 100 })
+    expect(await first()).toBe('rucni-mlynek')
   })
 
   it('returns a product by slug and 404 for an unknown one', async () => {
@@ -192,6 +235,6 @@ describe('with scenario hooks', () => {
     armScenario('sold_out')
     const result = await checkCart(items)
     expect(result.items).toEqual([])
-    expect((await getProducts()).find((p) => p.id === 1)?.stock).toBe(0)
+    expect((await getProducts({ ...defaultCatalogQuery, q: 'espresso' })).products[0]?.stock).toBe(0)
   })
 })

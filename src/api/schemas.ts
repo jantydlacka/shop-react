@@ -47,6 +47,15 @@ export const orderWire = z.object({
 export const dataEnvelope = <T extends z.ZodType>(inner: T): z.ZodObject<{ data: T }> =>
   z.object({ data: inner })
 
+export const productPageWire = z.object({
+  data: z.array(productWire),
+  meta: z.object({
+    current_page: z.number().int(),
+    last_page: z.number().int(),
+    total: z.number().int(),
+  }),
+})
+
 export const cartChangedWire = z.object({
   code: z.literal('cart_changed'),
   messages: z.array(z.string()),

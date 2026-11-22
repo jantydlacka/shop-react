@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Tamper">
+<rect width="400" height="400" fill="#e6ecdf"/>
+<rect x="130" y="190" width="140" height="28" rx="10" fill="#3f5a3a"/><rect x="185" y="90" width="30" height="105" rx="12" fill="#3f5a3a"/><circle cx="200" cy="82" r="24" fill="#3f5a3a"/>
+<text x="200" y="340" text-anchor="middle" font-family="system-ui, sans-serif" font-size="30" font-weight="600" fill="#3f5a3a">Tamper</text>
+</svg>

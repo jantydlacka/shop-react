@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { defaultCatalogQuery, type CatalogQuery } from '../catalog/query'
 import {
   type CartCheckResult,
   type CartItem,
@@ -11,6 +12,7 @@ import {
   categoryWire,
   dataEnvelope,
   orderWire,
+  productPageWire,
   productWire,
   throttledWire,
   validationWire,
@@ -106,9 +108,26 @@ export async function getCategories(): Promise<Category[]> {
   return camelize(await get('/categories', z.array(categoryWire)))
 }
 
-export async function getProducts(category?: string): Promise<Product[]> {
-  const query = category === undefined ? '' : `?category=${encodeURIComponent(category)}`
-  return camelize(await get(`/products${query}`, z.array(productWire)))
+export type ProductPage = { products: Product[]; currentPage: number; lastPage: number; total: number }
+
+export async function getProducts(query: CatalogQuery & { category?: string } = defaultCatalogQuery): Promise<ProductPage> {
+  const params = new URLSearchParams()
+  if (query.category !== undefined) params.set('category', query.category)
+  if (query.q !== defaultCatalogQuery.q) params.set('q', query.q)
+  if (query.sort !== defaultCatalogQuery.sort) params.set('sort', query.sort)
+  if (query.inStock) params.set('in_stock', '1')
+  if (query.page !== defaultCatalogQuery.page) params.set('page', String(query.page))
+  const search = params.size > 0 ? `?${params}` : ''
+
+  const raw = await send(`/products${search}`)
+  if (raw.status !== 200) unexpected(raw)
+  const { data, meta } = parse(productPageWire, raw)
+  return {
+    products: camelize(data),
+    currentPage: meta.current_page,
+    lastPage: meta.last_page,
+    total: meta.total,
+  }
 }
 
 export async function getProduct(slug: string): Promise<Product> {

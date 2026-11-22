@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { expect, test } from 'vitest'
-import { server, wire } from '../test/handlers'
+import { productPage, server, wire } from '../test/handlers'
 import { renderWithProviders } from '../test/renderWithProviders'
 
 test('shows a skeleton while loading', async () => {
@@ -15,7 +15,7 @@ test('shows an error with retry', async () => {
   let fail = true
   server.use(
     http.get('*/api/products', () =>
-      fail ? new HttpResponse(null, { status: 500 }) : HttpResponse.json({ data: [wire.product] }),
+      fail ? new HttpResponse(null, { status: 500 }) : HttpResponse.json(productPage([wire.product])),
     ),
   )
   renderWithProviders('/')
@@ -30,7 +30,7 @@ test('filters by category', async () => {
   server.use(
     http.get('*/api/products', ({ request }) => {
       requested = new URL(request.url).searchParams.get('category')
-      return HttpResponse.json({ data: [wire.product] })
+      return HttpResponse.json(productPage([wire.product]))
     }),
   )
   renderWithProviders('/kategorie/kava')
@@ -42,7 +42,7 @@ test('filters by category', async () => {
 
 test('shows sold out badge on cards with zero stock', async () => {
   server.use(
-    http.get('*/api/products', () => HttpResponse.json({ data: [{ ...wire.product, stock: 0 }] })),
+    http.get('*/api/products', () => HttpResponse.json(productPage([{ ...wire.product, stock: 0 }]))),
   )
   renderWithProviders('/')
   expect(await screen.findByText('Vyprodáno')).toBeInTheDocument()
