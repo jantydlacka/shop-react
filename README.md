@@ -94,7 +94,9 @@ refuses such a page. Neither job blocks the deploy. Measured locally on 2026-11-
 | Accessibility | 100 | 100 |
 | Best practices | 100 | 100 |
 
-CI enforces the minimum in `lighthouserc.json`, with the mobile preset. Performance is not asserted yet.
+CI enforces the minimums in `lighthouserc.json`, with the mobile preset. The performance minimum
+(0.75) comes from the first two CI runs (12 audits, performance 0.82–0.92 on the GitHub runner);
+the audit of the published demo does not assert performance, its first cold run scored 0.66.
 
 ## Architecture decisions
 
