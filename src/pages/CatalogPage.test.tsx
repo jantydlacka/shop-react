@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { beforeEach, describe, expect, test } from 'vitest'
@@ -87,10 +87,38 @@ describe('catalogue query', () => {
     expect(screen.getByRole('link', { name: 'Zrušit filtry' })).toHaveAttribute('href', '/kategorie/caj')
   })
 
-  test('a page past the end shows the empty state with a link to page 1', async () => {
+  test('a page past the end without filters says the page does not exist and links to page 1', async () => {
     renderWithProviders('/?strana=9&razeni=nazev')
-    expect(await screen.findByText('Nic neodpovídá hledání.')).toBeInTheDocument()
+    expect(await screen.findByText('Tato strana neexistuje.')).toBeInTheDocument()
+    expect(screen.queryByText('Nic neodpovídá hledání.')).toBeNull()
     expect(screen.getByRole('link', { name: 'Na první stranu' })).toHaveAttribute('href', '/?razeni=nazev')
+  })
+
+  test('a page past the end with a filter keeps the search message', async () => {
+    renderWithProviders('/?strana=9&hledat=caj')
+    expect(await screen.findByText('Nic neodpovídá hledání.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Na první stranu' })).toHaveAttribute('href', '/?hledat=caj')
+  })
+
+  test('Předchozí and Další keep the filters', async () => {
+    renderWithProviders('/?razeni=nazev&strana=2')
+    expect(await screen.findByRole('link', { name: 'Předchozí' })).toHaveAttribute('href', '/?razeni=nazev')
+    renderWithProviders('/?razeni=nazev')
+    expect(await screen.findByRole('link', { name: 'Další' })).toHaveAttribute('href', '/?razeni=nazev&strana=2')
+  })
+
+  test('a changed sort is fetched with the new parameter (query is part of the query key)', async () => {
+    const seen: string[] = []
+    server.use(
+      http.get('*/api/products', ({ request }) => {
+        seen.push(new URL(request.url).search)
+        return HttpResponse.json(productPage([wire.product]))
+      }),
+    )
+    const user = userEvent.setup()
+    renderWithProviders('/')
+    await user.selectOptions(await screen.findByRole('combobox', { name: 'Řazení' }), 'price_asc')
+    await waitFor(() => expect(seen).toEqual(['', '?sort=price_asc']))
   })
 
   test('invalid URL values fall back to defaults and never reach the API', async () => {

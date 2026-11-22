@@ -40,7 +40,8 @@ export function CatalogPage() {
     if (currentPage > 1) {
       return (
         <p>
-          Nic neodpovídá hledání. <Link to={linkTo({ page: defaultCatalogQuery.page })}>Na první stranu</Link>
+          {filtered ? 'Nic neodpovídá hledání.' : 'Tato strana neexistuje.'}{' '}
+          <Link to={linkTo({ page: defaultCatalogQuery.page })}>Na první stranu</Link>
         </p>
       )
     }

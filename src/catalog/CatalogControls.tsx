@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
-import { useLocation, useSearchParams } from 'react-router'
+import { useLocation, useNavigationType, useSearchParams } from 'react-router'
 import { toSearchParams, type CatalogQuery, type Sort } from './query'
 import styles from './CatalogControls.module.css'
 
@@ -17,21 +17,33 @@ const isSort = (value: string): value is Sort => sortOptions.some((option) => op
 
 export function CatalogControls({ query }: { query: CatalogQuery }) {
   const [, setSearchParams] = useSearchParams()
-  const { key } = useLocation()
+  const { key, state } = useLocation()
   const [draft, setDraft] = useState(query.q)
   const timer = useRef<number | undefined>(undefined)
+  // Our own writes carry navigation state and are never POP; Back/Forward (POP) to an entry we wrote earlier
+  // and links carry no marker. That tells a foreign navigation from our own write without timing,
+  // so a keystroke typed while the write lands is never overwritten.
+  const navigationType = useNavigationType()
+  const ownWrite = navigationType !== 'POP' && (state as { fromControls?: boolean } | null)?.fromControls === true
 
-  // Any navigation (Back, a category or logo link, Zrušit filtry) makes the URL the truth again:
-  // the field shows its value and a pending write must not land on the new page.
+  // A foreign navigation (Back, a category or logo link, Zrušit filtry, pagination) makes the URL the truth
+  // again: the field shows its value and a pending write must not land on the new page.
   const [seenKey, setSeenKey] = useState(key)
+  const [foreignNavigations, setForeignNavigations] = useState(0)
   if (seenKey !== key) {
     setSeenKey(key)
-    setDraft(query.q)
+    if (!ownWrite) {
+      setDraft(query.q)
+      setForeignNavigations((count) => count + 1)
+    }
   }
-  useEffect(() => () => window.clearTimeout(timer.current), [key])
+  useEffect(() => () => window.clearTimeout(timer.current), [foreignNavigations])
 
-  const write = (next: CatalogQuery, replace: boolean) =>
-    setSearchParams(toSearchParams(next), { replace })
+  const write = (next: CatalogQuery, replace: boolean) => {
+    window.clearTimeout(timer.current)
+    // Whitespace is not searched for, so the URL gets the trimmed text; the field keeps what was typed.
+    setSearchParams(toSearchParams({ ...next, q: next.q.trim() }), { replace, state: { fromControls: true } })
+  }
 
   const onSearch = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
@@ -42,7 +54,6 @@ export function CatalogControls({ query }: { query: CatalogQuery }) {
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault()
-    window.clearTimeout(timer.current)
     write({ ...query, q: draft, page: 1 }, true)
   }
 

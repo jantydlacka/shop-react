@@ -1,4 +1,4 @@
-import { act, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { createDemoHandlers } from '../demo/handlers'
@@ -139,4 +139,47 @@ test('the field follows the URL after Back, Zrušit filtry and the logo', async 
   await user.click(screen.getByRole('link', { name: 'Obchod' }))
   expect(searchBox()).toHaveValue('')
   expect(search(router)).toBe('')
+})
+
+test('a character typed while the debounced write lands is kept', async () => {
+  const user = setup()
+  const { router } = renderWithProviders('/')
+  const box = await screen.findByRole('searchbox', { name: 'Hledat' })
+  await user.type(box, 'abc')
+  // The timer fires and the next keystroke arrives before React has re-rendered with the new location.
+  act(() => {
+    vi.advanceTimersByTime(300)
+    fireEvent.change(box, { target: { value: 'abcd' } })
+  })
+  expect(searchBox()).toHaveValue('abcd')
+  await act(() => vi.advanceTimersByTimeAsync(300))
+  expect(searchBox()).toHaveValue('abcd')
+  expect(search(router)).toBe('?hledat=abcd')
+})
+
+test('a sort change within 300 ms of typing keeps the typed text', async () => {
+  const user = setup()
+  const { router } = renderWithProviders('/')
+  await user.type(await screen.findByRole('searchbox', { name: 'Hledat' }), 'caj')
+  await user.selectOptions(screen.getByRole('combobox', { name: 'Řazení' }), 'name')
+  await act(() => vi.advanceTimersByTimeAsync(1000))
+  expect(search(router)).toBe('?hledat=caj&razeni=nazev')
+  expect(searchBox()).toHaveValue('caj')
+})
+
+test('whitespace-only text leaves hledat out of the URL and stays as typed in the field', async () => {
+  const user = setup()
+  const { router } = renderWithProviders('/')
+  await user.type(await screen.findByRole('searchbox', { name: 'Hledat' }), '   {Enter}')
+  expect(search(router)).toBe('')
+  expect(searchBox()).toHaveValue('   ')
+})
+
+test('the URL gets the trimmed text while the field keeps what was typed', async () => {
+  const user = setup()
+  const { router } = renderWithProviders('/')
+  await user.type(await screen.findByRole('searchbox', { name: 'Hledat' }), 'caj ')
+  await act(() => vi.advanceTimersByTimeAsync(300))
+  expect(search(router)).toBe('?hledat=caj')
+  expect(searchBox()).toHaveValue('caj ')
 })
