@@ -72,5 +72,4 @@ jobs:
           configPath: ./lighthouserc.live.json
           urls: |
             ${{ needs.deploy.outputs.page_url }}
-            ${{ needs.deploy.outputs.page_url }}produkt/espresso-blend
           uploadArtifacts: true

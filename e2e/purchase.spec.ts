@@ -50,7 +50,9 @@ test('deep link and reload keep the page', async ({ page }) => {
   await fillCheckout(page)
   const number = await placeOrder(page)
 
-  await page.reload()
+  const confirmationUrl = page.url()
+  await page.goto('about:blank')
+  await page.goto(confirmationUrl)
   await expect(page).toHaveURL(new RegExp(`/objednavka/${number}$`))
   await expect(page.getByText(number)).toBeVisible()
 })

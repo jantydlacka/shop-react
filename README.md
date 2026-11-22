@@ -77,15 +77,16 @@ on pull requests. It runs, in order:
 (it builds the demo first), in a mobile (375 px) and a desktop (1280 px) project, with Google
 Chrome (`channel: 'chrome'`, no browser download). The specs cover the first visit, a purchase
 that ends on order `DEMO-0001`, a deep link and a reload, the price-change and network-failure
-scenarios. Every page (catalogue, product, cart, checkout, confirmation and the expanded demo panel) is also scanned with axe
+scenarios. Every page of the purchase flow (catalogue, product, cart, checkout, confirmation and the expanded demo panel) is also scanned with axe
 (`@axe-core/playwright`, WCAG 2.0/2.1 A and AA); a serious or critical violation fails the test.
 The `e2e` job blocks the deploy in `pages.yml`; `npm run check` stays free of a browser.
 
 ### Lighthouse
 
 Lighthouse CI (`lighthouserc.json`) audits the catalogue and the product page in CI against the
-demo build and, after each deploy, against the published demo (`lighthouserc.live.json`); neither
-job blocks the deploy. Measured locally on 2026-11-22 with Lighthouse 12.6.1 and Chrome
+demo build. After each deploy only the catalogue of the published demo is audited
+(`lighthouserc.live.json`), because a deep link on GitHub Pages answers HTTP 404 and Lighthouse
+refuses such a page. Neither job blocks the deploy. Measured locally on 2026-11-22 with Lighthouse 12.6.1 and Chrome
 157.0.8103.38 (headless), against `vite preview`, 3 runs per page and preset:
 
 | Category | Mobile | Desktop |
@@ -93,7 +94,7 @@ job blocks the deploy. Measured locally on 2026-11-22 with Lighthouse 12.6.1 and
 | Accessibility | 100 | 100 |
 | Best practices | 100 | 100 |
 
-CI enforces the minimum in `lighthouserc.json`. Performance is not asserted yet.
+CI enforces the minimum in `lighthouserc.json`, with the mobile preset. Performance is not asserted yet.
 
 ## Architecture decisions
 
