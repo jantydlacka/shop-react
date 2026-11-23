@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import { describe, expect, test } from 'vitest'
+import { defaultCatalogQuery } from '../catalog/query'
 import { server, wire } from '../test/handlers'
 import {
   ApiError,
@@ -28,31 +29,66 @@ describe('catalog', () => {
     expect(await getCategories()).toEqual([{ slug: 'kava', name: 'Káva' }])
   })
 
-  test('getProducts converts snake_case to camelCase', async () => {
-    const [product] = await getProducts()
-    expect(product).toEqual({
-      id: 1,
-      slug: 'espresso-blend',
-      name: 'Espresso blend 1 kg',
-      description: 'Směs arabiky.',
-      price: 64900,
-      stock: 23,
-      maxQuantity: 10,
-      imageUrl: null,
-      category: { slug: 'kava', name: 'Káva' },
-    })
+  test('getProducts converts snake_case to camelCase and reads the page meta', async () => {
+    const page = await getProducts()
+    expect(page).toMatchObject({ currentPage: 1, lastPage: 1, total: 1 })
+    expect(page.products).toEqual([
+      {
+        id: 1,
+        slug: 'espresso-blend',
+        name: 'Espresso blend 1 kg',
+        description: 'Směs arabiky.',
+        price: 64900,
+        stock: 23,
+        maxQuantity: 10,
+        imageUrl: null,
+        category: { slug: 'kava', name: 'Káva' },
+      },
+    ])
   })
 
-  test('getProducts sends the category filter', async () => {
-    let query: string | null = null
+  test('getProducts maps the meta fields', async () => {
+    server.use(
+      http.get('*/api/products', () =>
+        HttpResponse.json({
+          data: [],
+          links: {},
+          meta: { current_page: 3, last_page: 5, per_page: 12, total: 49, from: null, to: null },
+        }),
+      ),
+    )
+    expect(await getProducts()).toEqual({ products: [], currentPage: 3, lastPage: 5, total: 49 })
+  })
+
+  test('getProducts sends the filters as API parameters', async () => {
+    let query: Record<string, string> = {}
     server.use(
       http.get('*/api/products', ({ request }) => {
-        query = new URL(request.url).searchParams.get('category')
-        return HttpResponse.json({ data: [] })
+        query = Object.fromEntries(new URL(request.url).searchParams)
+        return HttpResponse.json({ data: [], meta: { current_page: 2, last_page: 2, total: 0 } })
       }),
     )
-    expect(await getProducts('kava')).toEqual([])
-    expect(query).toBe('kava')
+    await getProducts({ category: 'kava', q: 'čaj', sort: 'price_desc', inStock: true, page: 2 })
+    expect(query).toEqual({ category: 'kava', q: 'čaj', sort: 'price_desc', in_stock: '1', page: '2' })
+  })
+
+  test('getProducts leaves default values out of the request', async () => {
+    let search = 'unset'
+    server.use(
+      http.get('*/api/products', ({ request }) => {
+        search = new URL(request.url).search
+        return HttpResponse.json({ data: [], meta: { current_page: 1, last_page: 1, total: 0 } })
+      }),
+    )
+    await getProducts()
+    expect(search).toBe('')
+    await getProducts({ ...defaultCatalogQuery, category: 'caj' })
+    expect(search).toBe('?category=caj')
+  })
+
+  test('getProducts rejects a response without meta', async () => {
+    server.use(http.get('*/api/products', () => HttpResponse.json({ data: [] })))
+    await expect(getProducts()).rejects.toBeInstanceOf(ApiError)
   })
 
   test('getProduct returns one product', async () => {

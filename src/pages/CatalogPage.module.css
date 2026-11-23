@@ -13,3 +13,7 @@
     gap: 0.75rem;
   }
 }
+
+.stale {
+  opacity: 0.6;
+}

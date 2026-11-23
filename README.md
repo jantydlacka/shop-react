@@ -28,6 +28,24 @@ The screenshots come from a throwaway Playwright script driving Chrome against t
 the demo data of laravel-shop. The price notice in the checkout screenshot is the server's real 409
 answer; to get it, the script put a cart with an older price into `localStorage` before submitting.
 
+## Catalogue: search, sort, paging
+
+The catalogue state lives in the URL, so every view can be shared and Back works. Defaults are left
+out of the URL; invalid values are replaced by the defaults before a request is sent. The client maps
+the keys to the API parameters (`q`, `sort`, `in_stock`, `page`), which are described in the
+[laravel-shop README](https://github.com/jantydlacka/laravel-shop#readme). The category stays in the path
+(`/kategorie/:slug`); the header links keep the search, sort and in-stock filter and drop the page.
+
+| Key | Values | Default |
+|---|---|---|
+| `hledat` | text, up to 100 characters | none |
+| `razeni` | `nejnovejsi`, `nazev`, `cena-vzestupne`, `cena-sestupne` | `nejnovejsi` |
+| `skladem` | `1` | off |
+| `strana` | 1 to 10000 | 1 |
+
+The search field writes to the URL after 300 ms without typing and replaces the history entry; sort,
+the in-stock filter and paging add one. The demo catalogue has 14 products, so paging shows two pages.
+
 ## Stack
 
 React 19 · TypeScript · Vite · React Router · TanStack Query · React Hook Form · zod ·
@@ -77,7 +95,7 @@ on pull requests. It runs, in order:
 (it builds the demo first), in a mobile (375 px) and a desktop (1280 px) project, with Google
 Chrome (`channel: 'chrome'`, no browser download). The specs cover the first visit, a purchase
 that ends on order `DEMO-0001`, a deep link and a reload, the price-change and network-failure
-scenarios. Every page of the purchase flow (catalogue, product, cart, checkout, confirmation and the expanded demo panel) is also scanned with axe
+scenarios, and the catalogue (search, sort, in-stock filter, paging, Back, a shared link). Every page of the purchase flow (catalogue with filters and an empty search result, product, cart, checkout, confirmation and the expanded demo panel) is also scanned with axe
 (`@axe-core/playwright`, WCAG 2.0/2.1 A and AA); a serious or critical violation fails the test.
 The `e2e` job blocks the deploy in `pages.yml`; `npm run check` stays free of a browser.
 

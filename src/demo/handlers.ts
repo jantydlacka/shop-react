@@ -1,5 +1,6 @@
 import { http, HttpResponse, type RequestHandler } from 'msw'
 import { currentProducts, demoCategories, findProduct } from './catalog'
+import { queryProducts } from './productQuery'
 import { loadOrder, nextOrderNumber, saveOrder, type OrderWire } from './orders'
 
 export type WireItem = { product_id: number; quantity: number; price: number }
@@ -71,9 +72,14 @@ export function createDemoHandlers(options: { beforeCheck?: Hook; beforeOrder?: 
   return [
     http.get('*/api/categories', () => HttpResponse.json({ data: demoCategories })),
     http.get('*/api/products', ({ request }) => {
-      const category = new URL(request.url).searchParams.get('category')
-      const products = currentProducts().filter((p) => category === null || p.category.slug === category)
-      return HttpResponse.json({ data: products })
+      const params = new URL(request.url).searchParams
+      const result = queryProducts(currentProducts(), params)
+      if (result.status === 422) return HttpResponse.json(result.body, { status: 422 })
+      const category = params.get('category')
+      if (category !== null && category !== '' && !demoCategories.some((c) => c.slug === category)) {
+        return HttpResponse.json({ message: 'Not found.' }, { status: 404 })
+      }
+      return HttpResponse.json(result.body)
     }),
     http.get('*/api/products/:slug', ({ params }) => {
       const product = currentProducts().find((p) => p.slug === params.slug)

@@ -26,9 +26,14 @@ export const wire = {
   },
 }
 
+export const productPage = (products: unknown[]) => ({
+  data: products,
+  meta: { current_page: 1, last_page: 1, per_page: 12, total: products.length },
+})
+
 export const handlers = [
   http.get('*/api/categories', () => HttpResponse.json({ data: [wire.category] })),
-  http.get('*/api/products', () => HttpResponse.json({ data: [wire.product] })),
+  http.get('*/api/products', () => HttpResponse.json(productPage([wire.product]))),
   http.get('*/api/products/:slug', () => HttpResponse.json({ data: wire.product })),
   http.post('*/api/cart/check', () =>
     HttpResponse.json({ items: [{ product_id: 1, quantity: 2, price: 64900 }], messages: [] }),
