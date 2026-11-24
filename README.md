@@ -65,7 +65,9 @@ nvm use && npm ci && npm run dev
 ```
 
 The dev server proxies `/api` to `http://localhost:8088`. If the API runs elsewhere, set
-`VITE_API_PROXY` (for example `VITE_API_PROXY=http://localhost:8000 npm run dev`). Sail publishes
+`VITE_API_PROXY` (for example `VITE_API_PROXY=http://localhost:8000 npm run dev`). The same client also runs against
+[node-shop](https://github.com/jantydlacka/node-shop), a Node.js/TypeScript implementation of the
+same API: `VITE_API_PROXY=http://localhost:8089 npm run dev`. Sail publishes
 port 5173 as well; when it is taken, Vite picks the next free port and prints it.
 
 The demo build is `npm run build:demo` (output in `dist-demo/`, base path `/shop-react/`);
